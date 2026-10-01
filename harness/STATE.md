@@ -15,7 +15,7 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | B04 | Event ingestion | done (2026-10-02, 4f76952) |
 | B05 | RNG + samplers | done (2026-10-02, c45a47c) |
 | B06 | Scenarios + simulator | done (2026-10-02, d9feaee) |
-| B07 | Pacing + equal policy + runCampaign | todo |
+| B07 | Pacing + equal policy + runCampaign | done (2026-10-02, 1bffaa9) |
 | B08 | Posterior + Thompson policy | todo |
 | B09 | Greedy + oracle policies | todo |
 | B10 | Experiments CLI | todo |
