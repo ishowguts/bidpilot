@@ -7,16 +7,17 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B06 Scenarios + simulator — DONE, committing
-- Doing now: committing CI fix and B07
-- Done this session: Fixed ci.yml to migrate/seed test database. B07 done — added pacing.ts for hourly spend control with underspend recovery, equal policy, and runCampaign.ts day loop. Tests pass and pacing respects budgets.
-- Next step: push CI fix and B07, start B08
-- Files in flight (uncommitted): None (committing now).
-- Open problems / gotchas: CI was failing because it didn't migrate bidpilot_test. Fixed.
+- Task: B08 Posterior + Thompson policy — DONE, committing
+- Doing now: committing B08
+- Done this session: B08 done — added Posterior class for tracking Beta and CPC estimates with discount, implemented Thompson sampling policy with 2,000 draws, exploration floor, and capacity cap.
+- Next step: commit B08, start B09
+- Files in flight (uncommitted): packages/core/src/posterior.ts, packages/core/src/policies/thompson.ts, packages/core/src/posterior.test.ts, harness updates.
+- Open problems / gotchas: none
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Log
 
+- 2026-10-02 · B08 done: Posterior and Thompson policy implementation and tests. Next: B09.
 - 2026-10-02 · Fixed CI test database migration. B07 done: pacing, equal policy, runCampaign. Next: B08.
 - 2026-10-02 · B06 done: Scenarios and simulator implementation and tests. Next: B07.
 - 2026-10-02 · B05 done (c45a47c): RNG + samplers implementation and tests. Next: B06.
