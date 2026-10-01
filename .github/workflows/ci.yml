@@ -43,8 +43,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Migrate
-        run: pnpm --filter db migrate
+      - name: Migrate and Seed
+        run: |
+          pnpm --filter db migrate
+          DATABASE_URL=$DATABASE_URL_TEST pnpm --filter db migrate
+          DATABASE_URL=$DATABASE_URL_TEST pnpm --filter db seed
 
       - name: Guard
         run: node scripts/guard.mjs all
