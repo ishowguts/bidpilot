@@ -1,2 +1,11 @@
-// Core package: deterministic simulator, allocator, and pacing. No I/O.
-export {};
+export * from './scenarios.js';
+export * from './simulator.js';
+export * from './rng.js';
+export * from './pacing.js';
+export * from './runCampaign.js';
+export * from './posterior.js';
+export * from './policies/types.js';
+export * from './policies/equal.js';
+export * from './policies/greedy.js';
+export * from './policies/oracle.js';
+export * from './policies/thompson.js';
