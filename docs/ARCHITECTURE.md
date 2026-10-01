@@ -1,0 +1,377 @@
+# BidPilot — Architecture
+
+Status: design baseline, 2026-10-02. This document is the contract. Code follows it; when code must differ,
+this file and `harness/DECISIONS.md` change in the same commit.
+
+## 1. What it is
+
+A job-ad budget optimizer. A campaign has a daily budget and jobs in a few categories. Several job sites
+("publishers") sell clicks at different prices and convert clicks to applications at different, unknown rates.
+Each day BidPilot decides how much to spend on each publisher to get the most applications per rupee, keeps daily
+spend on budget, and shows how much better it does than splitting the budget equally.
+
+- **Simulator:** 6 fictional publishers with hidden cost-per-click, click-to-apply rate and click capacity per job
+  category, plus daily noise and an optional mid-campaign drift.
+- **Allocator:** Thompson sampling over each publisher's apply rate, turned into budget shares, with an exploration
+  floor and a discount factor for drift.
+- **Pacing:** hour-by-hour spend control: never over the daily budget, minimal underspend.
+- **Event API:** idempotent click/apply ingestion and SQL rollups (materialized view + window functions).
+- **Dashboard:** spend vs budget, cost per apply by publisher, budget share over time, applies vs baseline.
+- **Experiments:** 20 seeds × 30 days × policies, results table with confidence intervals in the README.
+
+## 2. System diagram
+
+```mermaid
+flowchart LR
+  subgraph CORE["packages/core (pure TypeScript, no I/O)"]
+    ENV[Simulator<br/>hidden publisher params, seeded RNG]
+    POL[Policies<br/>thompson / equal / greedy / oracle]
+    PACE[Pacing controller<br/>24 hourly ticks]
+  end
+  subgraph API["apps/api (Node.js + Express, TypeScript)"]
+    CAMP[Campaign runner<br/>advance N days]
+    EVT[Event ingestion<br/>idempotency keys]
+    STATS[Stats service<br/>rollups + window functions]
+    SUM[Daily summary<br/>LLM, numbers-only, stretch]
+  end
+  DB[(PostgreSQL 16<br/>events, allocations,<br/>daily_stats MV)]
+  EXP[experiments CLI<br/>seeds × days × policies<br/>in-memory]
+  WEB[apps/web<br/>Next.js 14 + Recharts]
+
+  CAMP --> POL & PACE & ENV
+  CAMP -->|allocations| DB
+  ENV -->|click/apply events| EVT --> DB
+  STATS --> DB
+  WEB -->|REST JSON| CAMP & STATS & SUM
+  EXP --> CORE
+  EXP -->|results.json + results.md| WEB
+```
+
+Two execution paths share the same core:
+- **Live path (API + DB):** a campaign is advanced day by day; every click and apply goes through the event API
+  into Postgres; the allocator reads yesterday's rollups from SQL. This is what the dashboard shows.
+- **Experiment path (CLI, in-memory):** thousands of campaign-days run without I/O to produce the statistics.
+  A parity test asserts both paths give identical allocations for the same seed (§10).
+
+## 3. Stack (fixed; changes need an ADR)
+
+| Layer | Choice |
+| --- | --- |
+| Language | TypeScript 5, `strict`, ESM, Node.js 20 LTS |
+| Monorepo | pnpm workspaces |
+| Backend | Express 4, zod, pino + pino-http, helmet, cors |
+| Database | PostgreSQL 16 (Docker locally, Neon in prod) |
+| ORM / migrations | Drizzle ORM + drizzle-kit; raw SQL migration for the materialized view |
+| Frontend | Next.js 14 App Router, Tailwind CSS, Recharts |
+| RNG | seeded `pure-rand` (xoroshiro128+), split streams (§6.1) |
+| Tests | Vitest, Supertest, fast-check (property tests for pacing) |
+| LLM (stretch) | Gemini via `@google/genai`, JSON mode, zod-validated, numbers-only grounding check |
+| CI | GitHub Actions: guard, lint, typecheck, test |
+| Deploy | Vercel (web), Render (api), Neon (Postgres) |
+
+## 4. Repository layout
+
+```
+bidpilot/
+├─ AGENTS.md                  operating manual (read first)
+├─ harness/                   HANDOFF, STATE, TASKS, DECISIONS, CONTEXT
+├─ docs/ARCHITECTURE.md       this file
+├─ packages/
+│  ├─ core/                   NO I/O. Deterministic given a seed.
+│  │  └─ src/
+│  │     ├─ rng.ts            seeded streams, normal, gamma, beta, poisson, binomial samplers
+│  │     ├─ scenarios.ts      publisher ground truth + scenarios (stationary, drift)
+│  │     ├─ simulator.ts      hour-level traffic → click/apply events
+│  │     ├─ posterior.ts      Beta posteriors with discount, CPC estimates
+│  │     ├─ policies/         thompson.ts, equal.ts, greedy.ts, oracle.ts (one interface)
+│  │     ├─ pacing.ts         hourly spend control
+│  │     └─ runCampaign.ts    day loop used by both the API and the experiments CLI
+│  ├─ db/                     schema.ts, client.ts, migrations/
+│  └─ shared/                 zod schemas + types for API requests/responses
+├─ apps/
+│  ├─ api/src/                server.ts, app.ts, env.ts, routes/, services/, middleware/
+│  └─ web/src/app/            / (campaign list), /campaigns/[id] (dashboard), /experiments
+├─ experiments/
+│  ├─ run.ts                  CLI: --seeds 20 --days 30 --scenario stationary|drift
+│  └─ results/                results.json, results.md (committed; regenerated by the CLI only)
+├─ docker-compose.yml
+├─ .env.example
+└─ scripts/                   guard.mjs, setup.sh, checkpoint.sh
+```
+
+## 5. Domain model
+
+- **Publisher** (6, fictional, `pub-a` … `pub-f`, shown as "Publisher A" … "Publisher F").
+- **Category** (4): `software`, `sales`, `healthcare`, `logistics`.
+- **Arm** = (category, publisher). The allocator learns per arm: 4 × 6 = 24 arms.
+- **Campaign:** daily budget (₹), number of days, policy, seed, scenario, jobs per category. The daily budget is split
+  across categories by job count (fixed), then across publishers within each category by the policy.
+
+### 5.1 Ground truth (hidden from policies)
+
+Each arm has: true CPC `c` (₹), true apply rate `p` (applies per click), daily click capacity `cap` (spread over hours by the traffic curve).
+Defaults live in `packages/core/src/scenarios.ts`. They are designed so that the cheapest CPC is **not** the cheapest
+cost per apply (otherwise a greedy-on-CPC rule would win and the problem is trivial). Example for `software`:
+
+| Publisher | CPC ₹ | Apply rate | True CPA ₹ | Daily click capacity |
+| --- | --- | --- | --- | --- |
+| A | 12 | 0.020 | 600 | 900 |
+| B | 18 | 0.045 | 400 | 300 |
+| C | 25 | 0.080 | 312 | 120 |
+| D | 8 | 0.010 | 800 | 2000 |
+| E | 30 | 0.060 | 500 | 300 |
+| F | 15 | 0.030 | 500 | 700 |
+
+Capacity matters: with the default ₹20,000/day budget, `software` gets ≈ ₹5,000/day; the best arm (C) can absorb only
+≈ ₹3,000 of it, so the optimal policy fills C, then B, and so on.
+
+Daily noise: CPC × lognormal(0, 0.15); apply rate × lognormal(0, 0.10) clipped to (0, 1).
+Hourly traffic weights follow a fixed day curve (low at night, peaks 10:00–13:00 and 19:00–22:00), summing to 1.
+**Drift scenario:** on day 15 the best arm's apply rate in each category drops by 50%.
+
+The type system enforces hiding: policies receive `Observation[]` (clicks, applies, spend per arm per day) and never
+the `Scenario` object.
+
+## 6. Algorithms
+
+### 6.1 Randomness and fair comparison
+
+All randomness comes from seeded streams. The **environment stream** is derived from `(seed, day, hour, arm)` and the
+**policy stream** from `(seed, policy, day)`. So every policy sees exactly the same traffic and noise for a given
+seed (common random numbers). Differences in results come from decisions, not luck. A run is fully reproducible from
+`(seed, scenario, policy, days, budget)`.
+
+### 6.2 Thompson sampling allocator (per category, once per day)
+
+State per arm, updated from yesterday's observations with discount factor γ (default 0.95, 1.0 = no forgetting):
+
+```
+α ← 1 + γ·(α − 1) + applies
+β ← 1 + γ·(β − 1) + (clicks − applies)
+ĉ ← discounted mean CPC (spend / clicks); prior = category mean CPC across publishers until 20 clicks observed
+```
+
+Allocation:
+1. Draw M = 2,000 samples per arm: θ ~ Beta(α, β); sampled CPA = ĉ / θ.
+2. `pBest[arm]` = share of draws in which the arm has the lowest sampled CPA.
+3. Exploration floor: `share = (1 − K·f)·pBest + f`, with K arms and floor `f = 0.03`.
+4. Capacity cap: an arm's budget ≤ 1.2 × (observed daily clicks capacity estimate) × ĉ. Excess is redistributed to the
+   remaining arms in proportion to `pBest`. Unknown capacity = uncapped.
+5. Budget per arm = share × category daily budget. Persist `pBest`, α, β, ĉ with each allocation row.
+
+Why this shape: probability-of-being-best is the Thompson decision rule turned into a budget split; the floor keeps
+learning on every publisher; the discount lets the model notice drift; the cap stops pouring money into an arm that
+cannot deliver clicks.
+
+### 6.3 Baselines
+
+- `equal`: every arm in a category gets the same share every day.
+- `greedy`: 3 days equal split, then 100% to the lowest observed CPA arm (capacity overflow to the next). Shows why
+  exploration matters, especially in the drift scenario.
+- `oracle`: knows true CPC, apply rate and capacity; fills arms in true-CPA order. An upper bound, used for regret.
+
+### 6.4 Pacing controller (inside a day, 24 hourly ticks)
+
+For each hour h and arm a:
+1. `hourCap[a] = remainingBudget[a] × w[h] / Σ_{k ≥ h} w[k]` (spend follows the traffic curve).
+2. Clicks available ~ Poisson(cap[a] × w[h]); clicks bought = min(available, floor(hourCap[a] / cpc_h)).
+3. **Hard stop:** before committing a batch, if total day spend + batch cost > daily budget, truncate the batch.
+   Spend never exceeds the daily budget, by construction.
+4. **Underspend recovery:** at the end of each hour, budget an arm cannot use (capacity-limited) moves to arms in the
+   same category with spare capacity, in proportion to their allocation shares.
+5. Applies ~ Binomial(clicks bought, p_day).
+
+Pacing metrics per day: `spend / budget` (target 0.97–1.00) and overdelivery (must be 0).
+
+### 6.5 Experiment protocol
+
+- Scenarios: `stationary`, `drift`. Policies: `equal`, `greedy`, `thompson`, `oracle`.
+- 20 seeds × 30 days, same daily budget (default ₹20,000) and job mix for all.
+- Per (scenario, policy): total applies, CPA (total spend / total applies), mean ± 95% CI across seeds (t-distribution,
+  19 df), % CPA change vs `equal` (paired by seed), regret vs `oracle` (applies lost), mean pacing ratio, overdelivery count.
+- Output: `experiments/results/results.json` and a markdown table `results.md` including the exact command and commit.
+  The README copies this table. No number appears anywhere without coming from this file.
+
+## 7. Data model (live path)
+
+```sql
+CREATE TABLE publishers (
+  id    smallserial PRIMARY KEY,
+  slug  text NOT NULL UNIQUE,          -- pub-a .. pub-f
+  name  text NOT NULL
+);
+
+CREATE TABLE campaigns (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          text NOT NULL,
+  daily_budget  numeric(12,2) NOT NULL CHECK (daily_budget > 0),
+  days          smallint NOT NULL CHECK (days BETWEEN 1 AND 90),
+  start_date    date NOT NULL,
+  target_cpa    numeric(10,2),
+  policy        text NOT NULL CHECK (policy IN ('thompson','equal','greedy','oracle')),
+  scenario      text NOT NULL CHECK (scenario IN ('stationary','drift')),
+  seed          integer NOT NULL,
+  baseline_of   uuid REFERENCES campaigns(id),   -- paired equal-split campaign, same seed
+  current_day   smallint NOT NULL DEFAULT 0,     -- days completed
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE jobs (
+  id           bigserial PRIMARY KEY,
+  campaign_id  uuid NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  title        text NOT NULL,
+  category     text NOT NULL CHECK (category IN ('software','sales','healthcare','logistics'))
+);
+
+CREATE TABLE allocations (
+  campaign_id   uuid NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  day           date NOT NULL,
+  category      text NOT NULL,
+  publisher_id  smallint NOT NULL REFERENCES publishers(id),
+  budget        numeric(12,2) NOT NULL,
+  p_best        real,
+  alpha         real,
+  beta          real,
+  cpc_estimate  numeric(10,4),
+  PRIMARY KEY (campaign_id, day, category, publisher_id)
+);
+
+CREATE TABLE events (
+  id               bigserial PRIMARY KEY,
+  idempotency_key  text NOT NULL UNIQUE,
+  campaign_id      uuid NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  job_id           bigint NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+  publisher_id     smallint NOT NULL REFERENCES publishers(id),
+  type             text NOT NULL CHECK (type IN ('click','apply')),
+  cost             numeric(10,4) NOT NULL DEFAULT 0 CHECK (cost >= 0),   -- clicks carry cost, applies 0
+  ts               timestamptz NOT NULL,
+  received_at      timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX events_campaign_ts_idx ON events (campaign_id, ts);
+
+CREATE MATERIALIZED VIEW daily_stats AS
+SELECT e.campaign_id,
+       (e.ts AT TIME ZONE 'Asia/Kolkata')::date        AS day,
+       j.category,
+       e.publisher_id,
+       count(*) FILTER (WHERE e.type = 'click')        AS clicks,
+       count(*) FILTER (WHERE e.type = 'apply')        AS applies,
+       coalesce(sum(e.cost), 0)                        AS spend
+FROM events e JOIN jobs j ON j.id = e.job_id
+GROUP BY 1, 2, 3, 4;
+CREATE UNIQUE INDEX daily_stats_pk ON daily_stats (campaign_id, day, category, publisher_id);
+
+CREATE TABLE daily_summaries (           -- stretch
+  campaign_id uuid NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  day         date NOT NULL,
+  numbers     jsonb NOT NULL,            -- exactly what was sent to the model
+  text        text NOT NULL,
+  model       text NOT NULL,
+  PRIMARY KEY (campaign_id, day)
+);
+```
+
+- The simulator emits click events individually (one row per click) so rollups are real SQL work. At the default
+  budget that is ≈ 1–2k clicks per campaign-day.
+- **Idempotency key** = `sha256(campaignId | day | hour | category | publisher | type | seq)`, deterministic. Ingestion
+  uses `INSERT … ON CONFLICT (idempotency_key) DO NOTHING` and returns `{ accepted, duplicates }`. Re-running a day
+  after a crash cannot double count.
+- After a day's events are in: `REFRESH MATERIALIZED VIEW CONCURRENTLY daily_stats`.
+
+Window-function queries (in `services/stats.ts`):
+
+```sql
+-- rolling 7-day CPA and daily budget share per publisher
+SELECT day, publisher_id,
+       sum(spend)   OVER w7 / nullif(sum(applies) OVER w7, 0)        AS cpa_7d,
+       spend / nullif(sum(spend) OVER (PARTITION BY day), 0)         AS spend_share,
+       sum(applies) OVER (ORDER BY day ROWS UNBOUNDED PRECEDING)     AS cum_applies_all
+FROM (SELECT day, publisher_id, sum(spend) spend, sum(applies) applies, sum(clicks) clicks
+      FROM daily_stats WHERE campaign_id = $1 GROUP BY day, publisher_id) d
+WINDOW w7 AS (PARTITION BY publisher_id ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)
+ORDER BY day, publisher_id;
+```
+
+## 8. API contract (JSON, prefix `/api`)
+
+Error shape: `{ "error": { "code", "message", "details"? }, "requestId" }`, codes `VALIDATION_ERROR` 400,
+`NOT_FOUND` 404, `CONFLICT` 409, `PAYLOAD_TOO_LARGE` 413, `INTERNAL` 500.
+
+| Method & path | Request | Response |
+| --- | --- | --- |
+| `GET /health` | — | `{ status, db }` |
+| `GET /publishers` | — | `[{ id, slug, name }]` |
+| `POST /campaigns` | `{ name, dailyBudget (1000–1,000,000), days (1–90), policy, scenario, seed?, jobsPerCategory?: Record<category, 0–50>, compareBaseline?: boolean }` | `Campaign` (+ `baselineId` when paired) |
+| `GET /campaigns` | — | `Campaign[]` |
+| `GET /campaigns/:id` | — | `Campaign` with progress |
+| `POST /campaigns/:id/advance` | `{ days: 1–30 }` | `{ currentDay, days: [{ day, budget, spend, clicks, applies, cpa }] }`; advances the paired baseline too. 409 if campaign finished |
+| `POST /events` | `{ events: Event[1..1000] }`, `Event = { idempotencyKey, campaignId, jobId, publisherId, type, cost, ts }` | `{ accepted, duplicates }` |
+| `GET /campaigns/:id/stats/daily` | — | `[{ day, publisherId, clicks, applies, spend, cpa, cpa7d, spendShare, budget, pBest }]` |
+| `GET /campaigns/:id/stats/summary` | — | `{ spend, budget, applies, cpa, pacingRatio, overdelivery, baseline?: { applies, cpa }, deltaCpaPct? }` |
+| `GET /campaigns/:id/summary/:day` | — (stretch) | `{ day, text, numbers }` |
+| `GET /experiments/latest` | — | contents of `experiments/results/results.json` |
+
+All schemas live in `packages/shared`. Campaign advance runs inside one transaction per day:
+allocate → simulate → ingest events → refresh view → bump `current_day`.
+
+## 9. Dashboard (`/campaigns/[id]`)
+
+KPI tiles: total applies, CPA (₹), CPA vs equal split (%), pacing ratio, overdelivery (should read 0).
+
+Four charts (Recharts):
+1. **Spend vs budget per day:** line for spend, dashed reference line for the daily budget.
+2. **Cost per apply by publisher (7-day rolling):** one line per publisher.
+3. **Budget share by publisher per day:** stacked area (shows Thompson sampling shifting money).
+4. **Cumulative applies, BidPilot vs equal split:** two lines from the paired campaigns.
+
+Controls: "Advance 1 day", "Advance to end". `/experiments` renders the results table and a CPA bar chart with CI
+whiskers per policy and scenario.
+
+## 10. Testing
+
+- **core (most of the tests):**
+  - samplers: Beta/Gamma/Poisson/Binomial sample means and variances within tolerance over 100k draws, fixed seed.
+  - determinism: same inputs → identical outputs; environment stream identical across policies.
+  - Thompson: on a stationary scenario, `pBest` of the true best arm > 0.8 by day 15 for ≥ 18 of 20 seeds.
+  - pacing (fast-check property): for random budgets, capacities and CPCs, day spend ≤ budget always; spend ≥ 0.97 ×
+    budget whenever total capacity × CPC ≥ 1.2 × budget.
+  - drift: with γ = 0.95, the allocator moves budget off the degraded arm within 5 days of the change.
+- **api (Supertest, real Postgres test DB):** idempotent ingestion (same batch twice → second returns all
+  duplicates, row count unchanged); campaign create/advance happy path; advance past end → 409; validation failures.
+- **parity:** advancing a campaign through the API produces the same allocations as `runCampaign` in memory with the
+  same seed (asserted for 5 days).
+- CI: `guard` → lint → typecheck → test (Postgres service container).
+
+## 11. Configuration
+
+| Var | Used by | Example / default |
+| --- | --- | --- |
+| `DATABASE_URL` | api | `postgres://postgres:postgres@localhost:5433/bidpilot` |
+| `DATABASE_URL_TEST` | api tests | `postgres://postgres:postgres@localhost:5433/bidpilot_test` |
+| `PORT` | api | `4100` |
+| `CORS_ORIGINS` | api | `http://localhost:3100` |
+| `LOG_LEVEL` | api | `info` |
+| `GEMINI_API_KEY` | api (stretch) | (secret) |
+| `GEMINI_MODEL` | api (stretch) | current Flash-tier model id |
+| `NEXT_PUBLIC_API_URL` | web | `http://localhost:4100` |
+
+Ports differ from TalentLens (5433 / 4100 / 3100) so both projects can run at the same time.
+
+## 12. LLM daily summary (stretch, T19)
+
+- Input: a JSON object of numbers computed in SQL for that day (spend, budget, applies, CPA per publisher, share
+  changes vs yesterday). Nothing else.
+- Output JSON `{ text: string (≤ 80 words) }`, zod-validated.
+- **Grounding check:** every number in `text` must appear in the input (after rounding to the precision sent). If any
+  number does not, the summary is rejected and replaced with a template sentence. The model cannot invent figures.
+
+## 13. Deployment
+
+Neon (Postgres), Render (api), Vercel (web), same pattern as TalentLens. Seed a demo campaign + paired baseline
+advanced to day 30 on deploy so the dashboard is never empty.
+
+## 14. How real traffic would differ (keep honest in the README)
+
+Real click data is delayed (applies arrive hours or days after clicks), noisy, seasonal, sometimes fraudulent, and
+publishers price by auction rather than fixed CPC. Extensions: delayed-feedback correction, bid (not just budget)
+optimization, hierarchical priors across similar jobs, and fraud filtering before the posterior update.

@@ -1,0 +1,53 @@
+# BidPilot — State
+
+Last updated: 2026-10-02 · Phase: **Day 1 — Foundation (not started)** · Next task: **B01**
+
+Build order note: TalentLens is built first. Start BidPilot after TalentLens reaches T24 (deployed), unless the owner
+says otherwise.
+
+Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-DD, <commit>)`
+
+| ID | Task | Status |
+| --- | --- | --- |
+| B01 | Monorepo scaffold | todo |
+| B02 | Postgres + schema | todo |
+| B03 | Express skeleton + CI | todo |
+| B04 | Event ingestion | todo |
+| B05 | RNG + samplers | todo |
+| B06 | Scenarios + simulator | todo |
+| B07 | Pacing + equal policy + runCampaign | todo |
+| B08 | Posterior + Thompson policy | todo |
+| B09 | Greedy + oracle policies | todo |
+| B10 | Experiments CLI | todo |
+| B11 | Campaign API | todo |
+| B12 | Stats API | todo |
+| B13 | Parity test | todo |
+| B14 | Web scaffold + campaign list | todo |
+| B15 | Dashboard | todo |
+| B16 | Experiments page | todo |
+| B17 | Test pass | todo |
+| B18 | Deploy | todo |
+| B19 | LLM daily summary (stretch) | todo |
+| B20 | README | todo |
+
+## Measurements
+
+Only measured values, each with the command that produced it and the commit.
+
+| Metric | Value | Command | Commit |
+| --- | --- | --- | --- |
+| CPA vs equal split, stationary (mean, 95% CI) | — | | |
+| CPA vs equal split, drift (mean, 95% CI) | — | | |
+| Regret vs oracle (applies lost) | — | | |
+| Mean pacing ratio / overdelivery count | — | | |
+| Experiment runtime (20 seeds × 30 days × 4 policies × 2 scenarios) | — | | |
+
+## Live URLs
+
+- Web: —
+- API: —
+
+## Owner-only items
+
+- Gemini API key for the stretch summary (agents never commit keys).
+- Recording the dashboard GIF (B20).
