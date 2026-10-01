@@ -17,7 +17,7 @@ export function createApp(env: Env, db?: Database): Express {
 
   // ── Middleware ───────────────────────────────────────────────────────────────
 
-  app.use(helmet());
+  app.use(helmet() as express.RequestHandler);
   app.use(cors({ origin: env.CORS_ORIGINS.split(',') }));
   app.use(express.json({ limit: '1mb' }));
 

@@ -7,17 +7,18 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B04 Event ingestion — DONE, committing
-- Doing now: committing B04
-- Done this session: B04 done — added shared event schema, POST /api/events endpoint, db insert query with ON CONFLICT DO NOTHING, tests pass.
-- Next step: commit B04, start B05
-- Files in flight (uncommitted): apps/api/src/app.ts, apps/api/src/app.test.ts, packages/db/src/events.ts, packages/shared/src/events.ts, and related package updates.
-- Open problems / gotchas: Tests require DATABASE_URL to point to a test database properly migrated (bidpilot_test).
+- Task: B05 RNG + samplers — DONE, committing
+- Doing now: committing B05
+- Done this session: B05 done — added Mulberry32 RNG and normal, lognormal, gamma, beta, poisson, binomial samplers in core. Tests pass and statistical moments are checked. Fixed some types and dependency issues.
+- Next step: commit B05, start B06
+- Files in flight (uncommitted): packages/core/src/rng.ts, packages/core/src/rng.test.ts, harness updates, package.json updates.
+- Open problems / gotchas: none
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Log
 
-- 2026-10-02 · B04 done: event schema, POST /api/events, DB logic, tests. Next: B05.
+- 2026-10-02 · B05 done: RNG + samplers implementation and tests. Next: B06.
+- 2026-10-02 · B04 done (4f76952): event schema, POST /api/events, DB logic, tests. Next: B05.
 - 2026-10-02 · B03 done (aea52a4). Starting B04.
 - 2026-10-02 · B03 done: express skeleton, tests, CI. Next: B04.
 - 2026-10-02 · B01+B02 pushed. Starting B03.
