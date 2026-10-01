@@ -7,19 +7,20 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B08 Posterior + Thompson policy — DONE, committing
-- Doing now: committing B08
-- Done this session: B08 done — added Posterior class for tracking Beta and CPC estimates with discount, implemented Thompson sampling policy with 2,000 draws, exploration floor, and capacity cap.
-- Next step: commit B08, start B09
-- Files in flight (uncommitted): packages/core/src/posterior.ts, packages/core/src/policies/thompson.ts, packages/core/src/posterior.test.ts, harness updates.
+- Task: B09 Greedy + oracle policies — DONE, committing
+- Doing now: committing B09
+- Done this session: B09 done — added GreedyPolicy (3 days equal, then 100% best arm) and OraclePolicy (cheats using ground truth). Verified via test that Oracle CPA <= Equal CPA and Greedy CPA.
+- Next step: commit B09, start B10
+- Files in flight (uncommitted): packages/core/src/policies/greedy.ts, packages/core/src/policies/oracle.ts, packages/core/src/policies/baselines.test.ts, harness updates.
 - Open problems / gotchas: none
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Log
 
-- 2026-10-02 · B08 done: Posterior and Thompson policy implementation and tests. Next: B09.
-- 2026-10-02 · Fixed CI test database migration. B07 done: pacing, equal policy, runCampaign. Next: B08.
-- 2026-10-02 · B06 done: Scenarios and simulator implementation and tests. Next: B07.
+- 2026-10-02 · B09 done: Greedy and Oracle baselines implementation and tests. Next: B10.
+- 2026-10-02 · B08 done (0475dce): Posterior and Thompson policy implementation and tests. Next: B09.
+- 2026-10-02 · Fixed CI test database migration. B07 done (1bffaa9): pacing, equal policy, runCampaign. Next: B08.
+- 2026-10-02 · B06 done (d9feaee): Scenarios and simulator implementation and tests. Next: B07.
 - 2026-10-02 · B05 done (c45a47c): RNG + samplers implementation and tests. Next: B06.
 - 2026-10-02 · B04 done (4f76952): event schema, POST /api/events, DB logic, tests. Next: B05.
 - 2026-10-02 · B03 done (aea52a4). Starting B04.
