@@ -11,7 +11,7 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | --- | --- | --- |
 | B01 | Monorepo scaffold | done (2026-10-02, dbd0029) |
 | B02 | Postgres + schema | done (2026-10-02, b3d9fc1) |
-| B03 | Express skeleton + CI | todo |
+| B03 | Express skeleton + CI | done (2026-10-02, PENDING) |
 | B04 | Event ingestion | todo |
 | B05 | RNG + samplers | todo |
 | B06 | Scenarios + simulator | todo |
