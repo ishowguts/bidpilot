@@ -2,6 +2,7 @@ import { RNG, lognormal, poisson, binomial } from './rng.js';
 import { type Scenario, type PublisherId, type Category } from './scenarios.js';
 
 export interface Event {
+  category: Category;
   publisherId: PublisherId;
   type: 'click' | 'apply';
   cost: number;
@@ -59,10 +60,10 @@ export function simulateHour(
 
   const events: Event[] = [];
   for (let i = 0; i < clicks; i++) {
-    events.push({ publisherId, type: 'click', cost: trueCpc });
+    events.push({ category, publisherId, type: 'click', cost: trueCpc });
   }
   for (let i = 0; i < applies; i++) {
-    events.push({ publisherId, type: 'apply', cost: 0 }); // Applies are free, cost is on clicks
+    events.push({ category, publisherId, type: 'apply', cost: 0 }); // Applies are free, cost is on clicks
   }
   
   return events;
