@@ -17,7 +17,7 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | B06 | Scenarios + simulator | done (2026-10-02, d9feaee) |
 | B07 | Pacing + equal policy + runCampaign | done (2026-10-02, 1bffaa9) |
 | B08 | Posterior + Thompson policy | done (2026-10-02, 0475dce) |
-| B09 | Greedy + oracle policies | todo |
+| B09 | Greedy + oracle policies | done (2026-10-02, f3eb05b) |
 | B10 | Experiments CLI | todo |
 | B11 | Campaign API | todo |
 | B12 | Stats API | todo |
