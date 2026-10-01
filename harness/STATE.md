@@ -13,7 +13,7 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | B02 | Postgres + schema | done (2026-10-02, b3d9fc1) |
 | B03 | Express skeleton + CI | done (2026-10-02, aea52a4) |
 | B04 | Event ingestion | done (2026-10-02, 4f76952) |
-| B05 | RNG + samplers | done (2026-10-02, PENDING) |
+| B05 | RNG + samplers | done (2026-10-02, c45a47c) |
 | B06 | Scenarios + simulator | todo |
 | B07 | Pacing + equal policy + runCampaign | todo |
 | B08 | Posterior + Thompson policy | todo |
