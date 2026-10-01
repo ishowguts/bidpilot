@@ -1,6 +1,6 @@
 # BidPilot — State
 
-Last updated: 2026-10-02 · Phase: **Day 1 — Foundation (not started)** · Next task: **B01**
+Last updated: 2026-10-02 · Phase: **Day 1 — Foundation (in progress)** · Next task: **B02**
 
 Build order note: TalentLens is built first. Start BidPilot after TalentLens reaches T24 (deployed), unless the owner
 says otherwise.
@@ -9,7 +9,7 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 
 | ID | Task | Status |
 | --- | --- | --- |
-| B01 | Monorepo scaffold | todo |
+| B01 | Monorepo scaffold | done (2026-10-02, PENDING) |
 | B02 | Postgres + schema | todo |
 | B03 | Express skeleton + CI | todo |
 | B04 | Event ingestion | todo |
