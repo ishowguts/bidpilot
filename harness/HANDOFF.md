@@ -7,17 +7,17 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B01 Monorepo scaffold — DONE, committing
-- Doing now: committing B01
-- Done this session: all 6 workspace packages created (core, db, shared, api, web, experiments), root tsconfig with project references, ESLint flat config with core I/O ban, Prettier, .env.example; `pnpm install && pnpm lint && pnpm typecheck` all pass
-- Next step: commit B01, update STATE with commit hash, start B02
-- Files in flight (uncommitted): all new B01 files + harness updates
+- Task: B02 Postgres + schema — DONE, committing
+- Doing now: committing B02
+- Done this session: B01 done (dbd0029), B02 done — docker-compose.yml, Drizzle schema (all §7 tables), daily_stats MV migration, custom migrate script, publisher seed; migrate twice = no-op, 6 publishers confirmed
+- Next step: commit B02, push B01+B02, start B03
+- Files in flight (uncommitted): docker-compose.yml, packages/db/*, harness updates
 - Open problems / gotchas: none
-- Commands to verify: `pnpm install && pnpm lint && pnpm typecheck`
+- Commands to verify: `pnpm --filter db migrate && pnpm --filter db seed`
 
 ## Log
 
-- 2026-10-02 · B01 complete: monorepo scaffold, all checks pass. Next: B02.
-- 2026-10-02 · recovered B01: previous agent cut off after creating root configs, no per-package dirs yet. Continuing.
-- 2026-10-02 · session start: read all harness files, verified identity and hooks, starting B01.
+- 2026-10-02 · B02 done: schema, migrations, seed, all acceptance criteria pass. Next: B03.
+- 2026-10-02 · B01 done (dbd0029). Starting B02.
+- 2026-10-02 · recovered B01: previous agent cut off after creating root configs. Finished scaffold.
 - 2026-10-02 · harness and architecture created; no code yet. Next: B01.
