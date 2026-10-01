@@ -7,16 +7,18 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B03 Express skeleton + CI — DONE, committing
-- Doing now: committing B03
-- Done this session: B03 done — api package setup with env validation, express, helmet, cors, error handlers, and tests; vitest setup; CI workflow. Tests and typecheck pass.
-- Next step: commit B03, start B04
-- Files in flight (uncommitted): apps/api/src/*, vitest.config.ts, .github/workflows/ci.yml, apps/api/package.json, harness updates
-- Open problems / gotchas: Skipped pino-http in favor of simple console error logging to avoid type declaration headaches, but pino is installed and could be added later if needed.
+- Task: B04 Event ingestion — DONE, committing
+- Doing now: committing B04
+- Done this session: B04 done — added shared event schema, POST /api/events endpoint, db insert query with ON CONFLICT DO NOTHING, tests pass.
+- Next step: commit B04, start B05
+- Files in flight (uncommitted): apps/api/src/app.ts, apps/api/src/app.test.ts, packages/db/src/events.ts, packages/shared/src/events.ts, and related package updates.
+- Open problems / gotchas: Tests require DATABASE_URL to point to a test database properly migrated (bidpilot_test).
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Log
 
+- 2026-10-02 · B04 done: event schema, POST /api/events, DB logic, tests. Next: B05.
+- 2026-10-02 · B03 done (aea52a4). Starting B04.
 - 2026-10-02 · B03 done: express skeleton, tests, CI. Next: B04.
 - 2026-10-02 · B01+B02 pushed. Starting B03.
 - 2026-10-02 · B02 done (b3d9fc1): schema, migrations, seed.

@@ -3,6 +3,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { randomUUID } from 'node:crypto';
 import { type Env } from './env.js';
+import { eventBatchSchema } from '@bidpilot/shared';
+import { type Database, insertEvents, refreshDailyStats } from '@bidpilot/db';
 
 // Error response shape per ARCHITECTURE §8.
 interface ApiError {
@@ -10,7 +12,7 @@ interface ApiError {
   requestId: string;
 }
 
-export function createApp(env: Env, db?: unknown): Express {
+export function createApp(env: Env, db?: Database): Express {
   const app = express();
 
   // ── Middleware ───────────────────────────────────────────────────────────────
@@ -43,6 +45,43 @@ export function createApp(env: Env, db?: unknown): Express {
     }
   });
 
+  app.post('/api/events', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!db) {
+        res.status(500).json({
+          error: { code: 'INTERNAL', message: 'Database not configured' },
+          requestId: req.id ?? 'unknown',
+        });
+        return;
+      }
+      const parsed = eventBatchSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const errorMsg = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ');
+        // 1001 events should be PAYLOAD_TOO_LARGE per ACCEPT criteria, but Zod min(1)/max(1000) causes VALIDATION_ERROR normally.
+        // Let's do a quick manual check for payload length first, or transform the Zod array length error.
+        if (Array.isArray(req.body.events) && req.body.events.length > 1000) {
+          res.status(413).json({
+             error: { code: 'PAYLOAD_TOO_LARGE', message: 'Maximum 1000 events per batch' },
+             requestId: req.id ?? 'unknown',
+          });
+          return;
+        }
+
+        res.status(400).json({
+          error: { code: 'VALIDATION_ERROR', message: errorMsg },
+          requestId: req.id ?? 'unknown',
+        });
+        return;
+      }
+
+      const { accepted, duplicates } = await insertEvents(db, parsed.data.events);
+      await refreshDailyStats(db);
+      res.json({ accepted, duplicates });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   // ── 404 handler ─────────────────────────────────────────────────────────────
 
   app.use((_req: Request, res: Response) => {
@@ -55,7 +94,6 @@ export function createApp(env: Env, db?: unknown): Express {
 
   // ── Error handler ───────────────────────────────────────────────────────────
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
     console.error(`[${req.id}]`, err);
     const body: ApiError = {

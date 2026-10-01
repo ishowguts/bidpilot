@@ -17,6 +17,7 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "@bidpilot/shared": "workspace:*",
     "drizzle-orm": "^0.39.0",
     "postgres": "^3.4.0"
   },
