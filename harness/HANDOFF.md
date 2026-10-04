@@ -6,14 +6,16 @@ continue from this file alone.
 
 ## Active session
 
-- Status: BLOCKED ON OWNER (B18 needs accounts; B11 needs CI confirmation for a5e556a)
-- Task: B18 Deploy
-- Doing now: nothing. Prepared and pushed (b841a94): demo seed, `render.yaml`, `apps/web/vercel.json`, §13, ADR-022.
-  Start sequence dry-run on a fresh local DB: migrate, seed, demo seed advanced 30 days; second run advanced 0.
-- Next step (needs the owner): Neon project + pooled DATABASE_URL; Render blueprint from `render.yaml` with
-  DATABASE_URL and CORS_ORIGINS; Vercel project with root `apps/web` and NEXT_PUBLIC_API_URL. Then check the live
-  dashboard renders all four charts, put the URLs in STATE, mark B18 done. Then B20 README, then B19.
-- Files in flight: none
+- Status: IN PROGRESS
+- Task: B18 Deploy prep, owner changes (B11 still awaits CI confirmation for a5e556a)
+- Doing now: (1) Supabase instead of Neon in render.yaml, §3/§13, ADR-022; (2) render.yaml region singapore;
+  (3) CORS origin normalization (trailing slash, case, path, quotes, missing scheme) with tests;
+  postgres-js `prepare: false` for the Supabase transaction pooler; `scripts/seed-prod.sh` that reads
+  DATABASE_URL_PROD from .env without printing it.
+- Next step: then B19 (LLM daily summary, §12) and add GEMINI_API_KEY/GEMINI_MODEL (sync: false) to render.yaml.
+  Run seed-prod only when the owner says so.
+- Files in flight: render.yaml, docs/ARCHITECTURE.md, harness/DECISIONS.md, apps/api/src/env.ts, apps/api/src/app.ts,
+  packages/db/src/client.ts, scripts/seed-prod.sh
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
   - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
