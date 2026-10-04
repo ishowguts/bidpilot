@@ -183,7 +183,8 @@ For each hour h and arm a:
 4. **Underspend recovery:** at the end of each hour, budget an arm cannot use (capacity-limited) moves to arms in the
    same category with spare capacity, in proportion to their allocation shares, and is spent in that same hour
    (ADR-010). Once 30% of the day's traffic weight has passed, an arm gives up only the part of its remaining
-   budget above 2 × its projected spend at today's run rate; the rest is carried forward (ADR-012).
+   budget above the spend for λ + 2σ clicks, where λ is its projected clicks for the rest of the day at today's run
+   rate and σ = √(λ + λ²/seen clicks); the rest is carried forward (ADR-012, ADR-023).
    **Catch-up:** from that point, an arm whose remaining budget is at least its projected spend buys every
    available click instead of its slice (ADR-012).
 5. Applies ~ Binomial(clicks bought, p_day).

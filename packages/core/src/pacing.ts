@@ -46,10 +46,10 @@ export interface CategoryDayResult {
 
 const HOURS = HOURLY_WEIGHTS.length;
 /**
- * Once the run rate is trusted, an arm that ran out of clicks gives up only the part of its remaining budget above
- * this multiple of its projected spend for the rest of the day.
+ * Once the run rate is trusted, an arm that ran out of clicks keeps money for its projected clicks for the rest of
+ * the day plus this many standard deviations of that projection, and gives up the rest (ADR-023).
  */
-const RUN_RATE_HEADROOM = 2;
+const RUN_RATE_Z = 2;
 /** The run rate is trusted once this share of the day's traffic weight has passed (about 10:00). */
 const MIN_RUN_RATE_WEIGHT = 0.3;
 /** Σ_{k ≥ h} w[k] for each hour h. */
@@ -75,7 +75,9 @@ export function paceCategory(
 
   for (let hour = 0; hour < HOURS; hour++) {
     const last = hour === HOURS - 1;
-    const traffic: HourTraffic[] = arms.map((a) => hourTraffic(seed, day, hour, category, a.publisherId, a.arm));
+    const traffic: HourTraffic[] = arms.map((a) =>
+      hourTraffic(seed, day, hour, category, a.publisherId, a.arm),
+    );
     traffic.forEach((t, i) => (availableSoFar[i]! += t.available));
     const bought = arms.map(() => 0);
     const spent = arms.map(() => 0);
@@ -118,8 +120,12 @@ export function paceCategory(
       if (bought[i] !== traffic[i]!.available) return 0;
       const unusedSlice = Math.max(0, slices[i]! - spent[i]!);
       if (seenWeight < MIN_RUN_RATE_WEIGHT) return unusedSlice;
+      // The rest of the day's clicks are Poisson around the projection, and the projection's run rate is itself
+      // estimated from the clicks seen so far: Var ≈ λ + λ² / seen. A flat multiple of λ kept far too much late in
+      // the day, when no arm had spare clicks left to spend it on (ADR-023).
       const projectedClicks = (availableSoFar[i]! * SUFFIX_WEIGHTS[hour + 1]!) / seenWeight;
-      const excess = remaining[i]! - RUN_RATE_HEADROOM * projectedClicks * arms[i]!.arm.cpc;
+      const sd = Math.sqrt(projectedClicks + projectedClicks ** 2 / Math.max(1, availableSoFar[i]!));
+      const excess = remaining[i]! - (projectedClicks + RUN_RATE_Z * sd) * arms[i]!.arm.cpc;
       return Math.max(0, Math.min(unusedSlice, excess));
     });
     const donated = donations.reduce((a, b) => a + b, 0);

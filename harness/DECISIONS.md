@@ -206,3 +206,23 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
 - The demo is the `emergence` scenario because it is the case exploration exists for (ADR-013): its budget-share
   chart shows Thompson sampling moving money to the publisher that improves on day 10. It has a fixed seed and start
   date, so the deployed numbers are reproducible from the repo.
+
+## ADR-023 · 2026-10-05 · Pacing keeps λ + 2σ for the rest of the day, not 2λ (fixes a late-day underspend)
+- CI failed the "≥ 97% of budget" pacing property (fast-check seed -1036790155): ₹63,017 budget, ₹61,126.34 spent,
+  15 paise short of the bound. The gap was ₹1,890 unspent while other arms still had about ₹12,900 of unbought clicks
+  over the day, so it was not rounding. Whole clicks and paise lose at most one click's CPC per arm per pooling step
+  (≤ ₹60 × 6 = ₹360 at the property's CPC range); the bound was not the problem and stays at 97%.
+- Cause: from ADR-012, an arm out of clicks kept 2 × its projected rest-of-day spend. Late in the day that keeps
+  roughly one extra last-hour's worth of money on the arms that are capacity-bound; at 23:00 every unused ₹ is
+  pooled, but no arm has spare clicks left in that hour, so the money is lost. The loss grows with the share of
+  budget on capacity-bound arms.
+- Fix: keep money for λ + z·σ clicks, where λ is the projected rest-of-day clicks and σ² = λ + λ²/seen combines the
+  Poisson noise of the remaining traffic with the error of a run rate estimated from `seen` clicks; z = 2 (about
+  a 97.7% one-sided bound under a normal approximation). Early in the day this keeps about 1.1-1.3 λ (the run-rate
+  error dominates), late in the day λ + 2√λ, so the excess moves to arms with spare clicks while they still have
+  them. Keeping too little is self-correcting (the arm then has spare clicks and receives other arms' unused
+  slices); keeping too much is not, which is why the margin is sized by the uncertainty rather than a flat 2×.
+- Measured on 34,008 random days satisfying the property's premise (fast-check sample, seed 42): before, 2 below
+  97% (min 96.6%); after, 0 (min 98.8%, 0.1% quantile 99.3%). z = 3 gave the same picture (min 99.0%). The ADR-012
+  regressions, the ADR-015 criteria and all outcome tests pass; experiment CPAs moved within their CIs and the
+  results files were regenerated.

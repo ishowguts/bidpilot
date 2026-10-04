@@ -32,29 +32,59 @@ function pacingArms(budget: number, arms: readonly RandomArm[]): PacingArm[] {
   }));
 }
 
+/**
+ * Runs a property and, on failure, fails with fast-check's report: the seed, the counterexample and the replay
+ * path. `FC_SEED` (and `FC_PATH`) replay a reported failure exactly; otherwise every run draws a new seed.
+ */
+function check<T>(property: fc.IProperty<T>, numRuns: number): void {
+  const seed = process.env.FC_SEED === undefined ? undefined : Number(process.env.FC_SEED);
+  const details = fc.check(property, { numRuns, seed, path: process.env.FC_PATH });
+  if (details.failed) {
+    const report = fc.defaultReportMessage(details) ?? `failed with seed ${details.seed}`;
+    console.error(report);
+    throw new Error(report);
+  }
+}
+
 describe('pacing properties (fast-check)', () => {
   it('day spend never exceeds the budget', () => {
-    fc.assert(
+    check(
       fc.property(dayArb, ({ seed, day, budget, arms }) => {
         const result = paceCategory(seed, day, 'software', pacingArms(budget, arms));
         expect(result.spend).toBeLessThanOrEqual(budget + 1e-6);
         expect(result.arms.reduce((s, a) => s + a.spend, 0)).toBeCloseTo(result.spend, 6);
         for (const a of result.arms) expect(a.applies).toBeLessThanOrEqual(a.clicks);
       }),
-      { numRuns: 300 },
+      300,
     );
   });
 
   it('spends at least 97% of the budget when capacity × CPC >= 1.2 × budget', () => {
-    fc.assert(
+    check(
       fc.property(dayArb, ({ seed, day, budget, arms }) => {
         const capacityValue = arms.reduce((s, a) => s + (a.capacity * a.cpcPaise) / 100, 0);
         fc.pre(capacityValue >= 1.2 * budget);
         const result = paceCategory(seed, day, 'software', pacingArms(budget, arms));
         expect(result.spend).toBeGreaterThanOrEqual(0.97 * budget);
       }),
-      { numRuns: 300 },
+      300,
     );
+  });
+
+  // Regression (ADR-023), the counterexample CI found with seed -1036790155: two capacity-bound arms held 2 × their
+  // projected spend into the last hour, when no arm had spare clicks left, and ₹1,890 went unspent (96.99%).
+  it('spends late money while other arms still have clicks (CI counterexample)', () => {
+    const arms: RandomArm[] = [
+      { cpcPaise: 2786, capacity: 1186, applyRate: 0.001, weight: 74 },
+      { cpcPaise: 1391, capacity: 1814, applyRate: 0.001, weight: 56 },
+      { cpcPaise: 447, capacity: 58, applyRate: 0.001, weight: 1 },
+      { cpcPaise: 1537, capacity: 500, applyRate: 0.001, weight: 1 },
+      { cpcPaise: 300, capacity: 2772, applyRate: 0.001, weight: 1 },
+      { cpcPaise: 337, capacity: 323, applyRate: 0.001, weight: 1 },
+    ];
+    const result = paceCategory(0, 1, 'software', pacingArms(63_017, arms));
+    expect(result.spend).toBeGreaterThanOrEqual(0.97 * 63_017);
+    expect(result.spend).toBeLessThanOrEqual(63_017);
   });
 });
 
@@ -72,15 +102,23 @@ describe('pacing', () => {
   });
 
   it('spends nothing on a zero budget and reports hourly rows that add up', () => {
-    const zero = paceCategory(1, 1, 'sales', PUBLISHER_IDS.map((publisherId) => ({
-      publisherId,
-      budget: 0,
-      arm: { cpc: 10, capacity: 100, applyRate: 0.05 },
-    })));
+    const zero = paceCategory(
+      1,
+      1,
+      'sales',
+      PUBLISHER_IDS.map((publisherId) => ({
+        publisherId,
+        budget: 0,
+        arm: { cpc: 10, capacity: 100, applyRate: 0.05 },
+      })),
+    );
     expect(zero.spend).toBe(0);
     expect(zero.hours).toHaveLength(0);
 
-    const arms = pacingArms(6000, PUBLISHER_IDS.map(() => ({ cpcPaise: 1500, capacity: 500, applyRate: 0.05, weight: 1 })));
+    const arms = pacingArms(
+      6000,
+      PUBLISHER_IDS.map(() => ({ cpcPaise: 1500, capacity: 500, applyRate: 0.05, weight: 1 })),
+    );
     const result = paceCategory(2, 3, 'logistics', arms);
     for (const a of result.arms) {
       const rows = result.hours.filter((h) => h.publisherId === a.publisherId);
