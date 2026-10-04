@@ -140,3 +140,19 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
 - The file is numbered 0002 because `0001_daily_stats_mv.sql` is a raw SQL file outside the drizzle journal.
 - The seed now pins publisher ids 1-6 to `pub-a` .. `pub-f` with an upsert, because core identifies publishers by
   those ids. Migrating twice is still a no-op.
+
+## ADR-018 · 2026-10-04 · Campaign API details beyond §8
+- `Campaign` carries `baselineOf` and `baselineId` (both nullable), `jobsPerCategory`, `progress` (0-1) and
+  `finished` on every endpoint, so the list and the dashboard need no second request. Create accepts optional
+  `startDate` (default: today in IST) and `targetCpa`; `compareBaseline` defaults to true because the dashboard's
+  "vs equal split" numbers need the pair. Missing `jobsPerCategory` means 5 jobs per category; given, missing
+  categories have 0 jobs.
+- Advance stops at the last day (asking for 5 days with 2 left advances 2) and returns 409 only when nothing is left.
+  Advancing a baseline directly is a 409: it moves only with its campaign, so the pair always stays on the same day.
+  Each day returns its calendar `date` next to the 1-based `day`, and `cpa` is null on a day without applies.
+- One transaction per day covers both campaigns of a pair: lock rows (`FOR UPDATE`) → read history from
+  `allocations` LEFT JOIN `daily_stats` → allocate → simulate → write allocations and events (1,000 per insert,
+  `ON CONFLICT DO NOTHING`) → refresh the view → bump `current_day` (guarded by the expected previous day). A crash
+  rolls the whole day back, and re-sent events are deduplicated by their deterministic keys.
+- Allocations are rounded down to paise in core (`allocateDay`), the precision of `allocations.budget`, so the live
+  path stores exactly what the in-memory path paces.

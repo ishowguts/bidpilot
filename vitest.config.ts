@@ -15,7 +15,8 @@ export default defineConfig({
         test: {
           name: 'api',
           include: ['apps/api/src/**/*.test.ts'],
-          fileParallelism: false,
+          pool: 'forks',
+          poolOptions: { forks: { singleFork: true } },
         },
       },
     ],

@@ -309,15 +309,19 @@ Error shape: `{ "error": { "code", "message", "details"? }, "requestId" }`, code
 | --- | --- | --- |
 | `GET /health` | — | `{ status, db }` |
 | `GET /publishers` | — | `[{ id, slug, name }]` |
-| `POST /campaigns` | `{ name, dailyBudget (1000–1,000,000), days (1–90), policy, scenario, seed?, jobsPerCategory?: Record<category, 0–50>, compareBaseline?: boolean }` | `Campaign` (+ `baselineId` when paired) |
+| `POST /campaigns` | `{ name, dailyBudget (1000–1,000,000), days (1–90), policy, scenario, seed?, jobsPerCategory?: Record<category, 0–50>, compareBaseline?: boolean (default true), startDate?: YYYY-MM-DD (default today IST), targetCpa? }` | 201 `Campaign` |
 | `GET /campaigns` | — | `Campaign[]` |
-| `GET /campaigns/:id` | — | `Campaign` with progress |
-| `POST /campaigns/:id/advance` | `{ days: 1–30 }` | `{ currentDay, days: [{ day, budget, spend, clicks, applies, cpa }] }`; advances the paired baseline too. 409 if campaign finished |
+| `GET /campaigns/:id` | — | `Campaign` |
+| `POST /campaigns/:id/advance` | `{ days: 1–30 }` | `{ currentDay, days: [{ day, date, budget, spend, clicks, applies, cpa \| null }] }`; advances the paired baseline too and stops at the last day. 409 if the campaign is finished or is itself a baseline |
 | `POST /events` | `{ events: Event[1..1000] }`, `Event = { idempotencyKey, campaignId, jobId, publisherId, type, cost, ts }` | `{ accepted, duplicates }` |
 | `GET /campaigns/:id/stats/daily` | — | `[{ day, publisherId, clicks, applies, spend, cpa, cpa7d, spendShare, budget, pBest }]` |
 | `GET /campaigns/:id/stats/summary` | — | `{ spend, budget, applies, cpa, pacingRatio, overdelivery, baseline?: { applies, cpa }, deltaCpaPct? }` |
 | `GET /campaigns/:id/summary/:day` | — (stretch) | `{ day, text, numbers }` |
 | `GET /experiments/latest` | — | contents of `experiments/results/results.json` |
+
+`Campaign` = `{ id, name, dailyBudget, days, startDate, targetCpa, policy, scenario, seed, baselineOf, baselineId,
+jobsPerCategory, currentDay, progress (0–1), finished, createdAt }`; `baselineOf` is set on a baseline, `baselineId` on
+the campaign that has one (ADR-018).
 
 All schemas live in `packages/shared`. Campaign advance runs inside one transaction per day:
 allocate → simulate → ingest events → refresh view → bump `current_day`.

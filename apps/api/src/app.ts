@@ -8,6 +8,7 @@ import type { Env } from './env.js';
 import { errorHandler, notFoundHandler } from './middleware/errors.js';
 import { healthRouter } from './routes/health.js';
 import { eventsRouter } from './routes/events.js';
+import { campaignsRouter } from './routes/campaigns.js';
 
 export interface AppDeps {
   env: Env;
@@ -36,6 +37,7 @@ export function createApp({ env, db }: AppDeps): Express {
 
   app.use('/api', healthRouter(db));
   app.use('/api', eventsRouter(db));
+  app.use('/api', campaignsRouter(db));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
