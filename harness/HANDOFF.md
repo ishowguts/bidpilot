@@ -32,6 +32,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · B18 done: web https://bidpilot-ashen.vercel.app and API https://bidpilot-api-jcys.onrender.com live; demo dashboard (tiles, four charts), experiments page and campaign list verified on the live site. Demo summary: 2,429 applies, CPA ₹247, −35.4% vs equal split, pacing 99.9%, overdelivery ₹0.
 - 2026-10-05 · B11 done: owner confirmed CI green on GitHub at fd36ddd. API live on Render (owner verified).
 - 2026-10-05 · Production DB (Supabase, Singapore) migrated and seeded via scripts/seed-prod.sh: 6 publishers, 2 campaigns (demo + baseline, day 30/30), 40 jobs, 1,440 allocations, 96,940 events, 92,942 clicks in both events and daily_stats.
 - 2026-10-05 · CI red on d6d1a67 (pacing property, seed -1036790155): root cause late-day stranded headroom, fixed with λ + 2σ (ADR-023, e903192); results regenerated (fd36ddd); ci-local green 3 times.

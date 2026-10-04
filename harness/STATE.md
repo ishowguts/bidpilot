@@ -1,6 +1,6 @@
 # BidPilot — State
 
-Last updated: 2026-10-05 · Phase: **Day 5 — Ship** · Next task: **B18**
+Last updated: 2026-10-05 · Phase: **Day 5 — Ship** · Next task: **B19**
 
 Build order note: TalentLens is built first. Start BidPilot after TalentLens reaches T24 (deployed), unless the owner
 says otherwise.
@@ -26,7 +26,7 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | B15 | Dashboard | done (2026-10-05, 5336111) |
 | B16 | Experiments page | done (2026-10-05, 96d48d7) |
 | B17 | Test pass | done (2026-10-05, d671b1b) |
-| B18 | Deploy | todo |
+| B18 | Deploy | done (2026-10-05, b841a94; deploy fixes 7d51086, 38e158a) |
 | B19 | LLM daily summary (stretch) | todo |
 | B20 | README | todo |
 
@@ -53,7 +53,7 @@ fix (ADR-023); every CPA moved within its confidence interval.
 
 ## Live URLs
 
-- Web: —
+- Web: https://bidpilot-ashen.vercel.app (Vercel; list, dashboard and experiments pages verified 2026-10-05 in headless Chrome)
 - API: https://bidpilot-api-jcys.onrender.com (Render, Singapore; health ok, demo pair at day 30, owner verified 2026-10-05)
 
 ## Owner-only items
