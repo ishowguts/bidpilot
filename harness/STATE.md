@@ -36,19 +36,20 @@ Only measured values, each with the command that produced it and the commit.
 
 | Metric | Value | Command | Commit |
 | --- | --- | --- | --- |
-| Thompson CPA vs equal split, stationary (paired, mean ± 95% CI) | −20.1% ± 1.4% (₹381.3 vs ₹477.6), lower on 20/20 seeds | `pnpm exp --seeds 20 --days 30 --scenario all --ablation` | add6965 |
-| Thompson CPA vs equal split, drift | −14.6% ± 1.3% (₹438.3 vs ₹513.3), 20/20 | same | add6965 |
-| Thompson CPA vs equal split, emergence | −31.2% ± 1.7% (₹276.5 vs ₹401.9), 20/20 | same | add6965 |
-| Thompson vs greedy CPA (stationary / drift / emergence) | ₹381.3 vs ₹374.8 / ₹438.3 vs ₹427.1 / ₹276.5 vs ₹364.7; Thompson lower on 5 / 4 / 20 of 20 seeds | same | add6965 |
-| Regret vs oracle, applies lost (thompson / greedy / equal) | stationary 206 / 210 / 522; drift 248 / 250 / 448; emergence 393 / 952 / 1074 | same | add6965 |
-| Mean pacing ratio / overdelivery days | Thompson 0.9993 in every scenario / 0 days for every policy | same | add6965 |
-| Floor ablation, Thompson CPA at 0% / 1% / 3% | stationary 380.6 / 381.3 / 387.3; drift 439.4 / 438.3 / 444.7; emergence 270.9 / 276.5 / 286.4 | same | add6965 |
-| Experiment runtime, default (20 seeds × 30 days × 4 policies × 3 scenarios) | 31.3 s (earlier run at 5293224: 27.9 s) | `pnpm exp --seeds 20 --days 30 --scenario all` | add6965 |
-| Experiment runtime with `--ablation` (adds 2 Thompson floors) | 69.6 s (earlier run at b38fa01: 60.5 s) | `pnpm exp --seeds 20 --days 30 --scenario all --ablation` | add6965 |
+| Thompson CPA vs equal split, stationary (paired, mean ± 95% CI) | −20.3% ± 1.4% (₹380.3 vs ₹477.6), lower on 20/20 seeds | `pnpm exp --seeds 20 --days 30 --scenario all --ablation` | e903192 |
+| Thompson CPA vs equal split, drift | −14.9% ± 1.3% (₹436.7 vs ₹513.3), 20/20 | same | e903192 |
+| Thompson CPA vs equal split, emergence | −31.4% ± 1.5% (₹275.5 vs ₹401.9), 20/20 | same | e903192 |
+| Thompson vs greedy CPA (stationary / drift / emergence) | ₹380.3 vs ₹375.3 / ₹436.7 vs ₹427.9 / ₹275.5 vs ₹363.7; Thompson lower on 5 / 7 / 20 of 20 seeds | same | e903192 |
+| Regret vs oracle, applies lost (thompson / greedy / equal) | stationary 204 / 214 / 525; drift 244 / 252 / 448; emergence 385 / 943 / 1073 | same | e903192 |
+| Mean pacing ratio / overdelivery days | Thompson 0.9993 in every scenario / 0 days for every policy | same | e903192 |
+| Floor ablation, Thompson CPA at 0% / 1% / 3% | stationary 379.8 / 380.3 / 388.0; drift 437.9 / 436.7 / 443.2; emergence 269.0 / 275.5 / 285.8 | same | e903192 |
+| Experiment runtime, default (20 seeds × 30 days × 4 policies × 3 scenarios) | 31.3 s at add6965 (27.9 s at 5293224); not re-timed after e903192 | `pnpm exp --seeds 20 --days 30 --scenario all` | add6965 |
+| Experiment runtime with `--ablation` (adds 2 Thompson floors) | 60.0 s (69.6 s at add6965, 60.5 s at b38fa01) | `pnpm exp --seeds 20 --days 30 --scenario all --ablation` | e903192 |
+| Pacing: days spending < 97% of budget when capacity value ≥ 1.2 × budget | 0 of 34,008 random days, min 98.8% (before ADR-023: 2, min 96.6%) | fast-check sample of the property's arbitrary, seed 42 (ADR-023) | e903192 |
 
 Runtimes measured on the owner's Mac (Node 25, single process); they vary by about 10% between runs. Committed
-`experiments/results/` come from the `--ablation` run. Results were regenerated at add6965 because allocations
-are now rounded down to paise (needed for parity with the live path); numbers moved by at most ₹1.1 in CPA.
+`experiments/results/` come from the `--ablation` run. Results were regenerated at e903192 after the pacing headroom
+fix (ADR-023); every CPA moved within its confidence interval.
 
 ## Live URLs
 
