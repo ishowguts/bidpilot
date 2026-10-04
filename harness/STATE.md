@@ -1,6 +1,6 @@
 # BidPilot — State
 
-Last updated: 2026-10-05 · Phase: **Day 5 — Ship** · Next task: **B20**
+Last updated: 2026-10-05 · Phase: **Day 5 — Ship** · Next task: none (B01-B20 done)
 
 Build order note: TalentLens is built first. Start BidPilot after TalentLens reaches T24 (deployed), unless the owner
 says otherwise.
@@ -28,7 +28,7 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | B17 | Test pass | done (2026-10-05, d671b1b) |
 | B18 | Deploy | done (2026-10-05, b841a94; deploy fixes 7d51086, 38e158a) |
 | B19 | LLM daily summary (stretch) | done (2026-10-05, 5059301; install fix 023b1da) |
-| B20 | README | todo |
+| B20 | README | done (2026-10-05, cb7f564; screenshot from the live site, GIF optional for the owner) |
 
 ## Measurements
 
@@ -60,4 +60,5 @@ fix (ADR-023); every CPA moved within its confidence interval.
 ## Owner-only items
 
 - Gemini API key for the stretch summary (agents never commit keys).
-- Recording the dashboard GIF (B20).
+- Recording a dashboard GIF (optional; the README has a static screenshot of the live dashboard).
+- Setting GEMINI_API_KEY and GEMINI_MODEL in Render to enable model-written summaries on the live API.

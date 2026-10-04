@@ -6,12 +6,12 @@ continue from this file alone.
 
 ## Active session
 
-- Status: IN PROGRESS
-- Task: B20 README
-- Doing now: README per TASKS B20: what it is, live links, diagram from §2, results table copied from
-  experiments/results/results.md, how to run, how real traffic differs (§14), status. Screenshot/GIF is the owner's.
-- Next step: write README.md, guard scan, ci-local, mark B20 done, push.
-- Files in flight: README.md
+- Status: IDLE (all tasks B01-B20 done)
+- Task: none
+- Doing now: nothing.
+- Next step: owner items in STATE (Gemini vars in Render, optional GIF). Any new work starts as a new task in
+  TASKS.md.
+- Files in flight: none
   packages/db/src/client.ts, scripts/seed-prod.sh
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
@@ -29,6 +29,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · B20 done (cb7f564): README with live links, screenshot, diagram, results copied from results.md, how to run, §14. ci-local green.
 - 2026-10-05 · B19 done (5059301, 023b1da): summary endpoint, grounding check, template fallback, fake-model tests; live model 4/4 grounded. Owner: set GEMINI_API_KEY and GEMINI_MODEL in Render to enable it there.
 - 2026-10-05 · B18 done: web https://bidpilot-ashen.vercel.app and API https://bidpilot-api-jcys.onrender.com live; demo dashboard (tiles, four charts), experiments page and campaign list verified on the live site. Demo summary: 2,429 applies, CPA ₹247, −35.4% vs equal split, pacing 99.9%, overdelivery ₹0.
 - 2026-10-05 · B11 done: owner confirmed CI green on GitHub at fd36ddd. API live on Render (owner verified).
