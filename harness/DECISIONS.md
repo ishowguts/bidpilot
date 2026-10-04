@@ -122,7 +122,7 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
 
 ## ADR-016 · 2026-10-04 · Floor ablation behind `--ablation`; committed results include it
 - Owner decision: the default `pnpm exp` run must stay under the 60 s target, so the 0% and 3% floor variants run
-  only with `--ablation`. Measured: default run 27.9 s, with `--ablation` 60.5 s (STATE Measurements).
+  only with `--ablation`. Measured: default run 27.9-31.3 s, with `--ablation` 60.5-69.6 s (STATE Measurements).
 - The committed `experiments/results/` files come from the `--ablation` run so the README and the experiments page
   can show the ablation; the files record the exact command and commit.
 - Arguments are parsed with `node:util` `parseArgs` and validated with zod, so no CLI framework is needed.
