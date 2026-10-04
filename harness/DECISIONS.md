@@ -70,3 +70,21 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   for the drift scenario and greedy needs it to count warm-up days even when no observations exist yet.
 - The simulator rounds each day's noisy CPC to paise, and observations carry spend rounded to paise. Spend then
   sums exactly in memory and in SQL `numeric`, which the parity test (§10) relies on.
+
+## ADR-012 · 2026-10-04 · Pacing lets capacity-bound arms catch up (fixes an under-delivery defect)
+- Defect: Thompson's capacity estimate for publisher C (the best, capacity-limited arm) averaged 58-77% of the
+  true capacity by day 30. Cause: pacing followed the hourly curve rigidly. In an hour with fewer clicks than its
+  slice, the arm gave the unused slice away for good; in an hour with more clicks than its slice, it could not buy
+  them. With a budget of 1.2 × its capacity value, the arm bought only 88% of its available clicks, so every day
+  looked capacity-limited and the capacity estimate (and with it the 1.2 × estimate × ĉ cap) ratcheted down to
+  about 83% of real capacity.
+- Decision: pacing uses today's run rate (available clicks seen so far per unit of traffic weight), trusted once
+  30% of the day's traffic weight has passed. An arm whose remaining budget is at least its projected spend for
+  the rest of the day buys every available click instead of its slice. After the trust point, an arm that ran out
+  of clicks gives up only the part of its remaining budget above 2 × its projected spend; before it, the ADR-010
+  rule (give up the unused slice) still applies, so budget held by arms with tiny capacity starts moving at once.
+- Considered and rejected: changing the capacity estimator to a discounted maximum. With the pacing fix it made no
+  measurable difference (same 0.85-0.97 of capacity in the feedback loop), so the mean over limited days stays.
+- Evidence: bought/available clicks at 1.2 × capacity value rose from 0.883 to 0.929 (20 seeds × 10 days); the
+  capped-arm feedback loop rose from 0.78-0.88 to 0.85-0.97 of capacity. Both are regression tests in
+  `pacing.test.ts` that fail on the old code. The §10 properties hold over 30,000 fast-check cases.

@@ -2,9 +2,10 @@
 //
 // Per hour and arm: the arm's slice of its remaining budget follows the traffic curve, clicks bought are the
 // smaller of the available clicks and what the slice pays for, and a hard stop truncates any batch that would push
-// the day's spend over the category budget. At the end of each hour, the unused slice of an arm that ran out of
-// clicks is spent in that same hour on arms with spare clicks, in proportion to their allocation shares. In the
-// last hour every unused ₹ is pooled the same way, so underspend is limited to about one click (ADR-010).
+// the day's spend over the category budget. An arm whose budget exceeds what today's run rate says it can buy
+// stops following the curve and buys every available click. At the end of each hour, budget an arm cannot use is
+// spent in that same hour on arms with spare clicks, in proportion to their allocation shares; in the last hour
+// every unused ₹ is pooled the same way (ADR-010, ADR-012).
 import { hourTraffic, type HourTraffic } from './simulator.js';
 import { HOURLY_WEIGHTS, type ArmTruth, type Category, type PublisherId } from './scenarios.js';
 
@@ -44,6 +45,13 @@ export interface CategoryDayResult {
 }
 
 const HOURS = HOURLY_WEIGHTS.length;
+/**
+ * Once the run rate is trusted, an arm that ran out of clicks gives up only the part of its remaining budget above
+ * this multiple of its projected spend for the rest of the day.
+ */
+const RUN_RATE_HEADROOM = 2;
+/** The run rate is trusted once this share of the day's traffic weight has passed (about 10:00). */
+const MIN_RUN_RATE_WEIGHT = 0.3;
 /** Σ_{k ≥ h} w[k] for each hour h. */
 const SUFFIX_WEIGHTS: readonly number[] = HOURLY_WEIGHTS.map((_, h) =>
   HOURLY_WEIGHTS.slice(h).reduce((a, b) => a + b, 0),
@@ -62,11 +70,13 @@ export function paceCategory(
   const dayApplies = arms.map(() => 0);
   const daySpendByArm = arms.map(() => 0);
   const hours: ArmHourResult[] = [];
+  const availableSoFar = arms.map(() => 0);
   let daySpend = 0;
 
   for (let hour = 0; hour < HOURS; hour++) {
     const last = hour === HOURS - 1;
     const traffic: HourTraffic[] = arms.map((a) => hourTraffic(seed, day, hour, category, a.publisherId, a.arm));
+    traffic.forEach((t, i) => (availableSoFar[i]! += t.available));
     const bought = arms.map(() => 0);
     const spent = arms.map(() => 0);
 
@@ -83,17 +93,35 @@ export function paceCategory(
     };
     const hasSpare = (i: number): boolean => shares[i]! > 0 && bought[i]! < traffic[i]!.available;
 
-    const slices = remaining.map((r) => (last ? r : (r * HOURLY_WEIGHTS[hour]!) / SUFFIX_WEIGHTS[hour]!));
+    // Today's run rate (clicks per unit of traffic weight) projects each arm's clicks for the rest of the day.
+    // An arm whose remaining budget exceeds that projection cannot spend it all by following the curve, so it
+    // buys every available click instead of holding money back for hours that will not deliver (ADR-012).
+    const seenWeight = 1 - (SUFFIX_WEIGHTS[hour + 1] ?? 0);
+    const capacityBound = (i: number): boolean => {
+      if (seenWeight < MIN_RUN_RATE_WEIGHT) return false;
+      const projectedClicks = (availableSoFar[i]! / seenWeight) * SUFFIX_WEIGHTS[hour]!;
+      return remaining[i]! >= projectedClicks * arms[i]!.arm.cpc;
+    };
+    const slices = remaining.map((r, i) =>
+      last || capacityBound(i) ? r : (r * HOURLY_WEIGHTS[hour]!) / SUFFIX_WEIGHTS[hour]!,
+    );
     slices.forEach((slice, i) => buy(i, slice));
     remaining.forEach((_, i) => (remaining[i]! -= spent[i]!));
 
-    // Underspend recovery: the unused slice of every capacity-limited arm (in the last hour, every unused ₹)
-    // is pooled and spent this hour on arms with spare clicks, first in proportion to allocation shares, then in
-    // arm order so rounding leftovers are not lost. Donors pay for it in proportion to what they put in; the
-    // rest stays with them.
-    const donations = arms.map((_, i) =>
-      last ? remaining[i]! : bought[i] === traffic[i]!.available ? Math.max(0, slices[i]! - spent[i]!) : 0,
-    );
+    // Underspend recovery: an arm that ran out of clicks this hour gives up its unused slice. Once the run rate is
+    // trusted, it gives up no more than the part of its remaining budget it cannot spend today; the rest is carried
+    // forward so the arm can catch up in busier hours (ADR-012). In the last hour every unused ₹ is given up. The
+    // pool is spent this hour on arms with spare clicks, first in proportion to allocation shares, then in arm order
+    // so rounding leftovers are not lost. Donors pay in proportion to what they put in; the rest stays with them.
+    const donations = arms.map((_, i) => {
+      if (last) return remaining[i]!;
+      if (bought[i] !== traffic[i]!.available) return 0;
+      const unusedSlice = Math.max(0, slices[i]! - spent[i]!);
+      if (seenWeight < MIN_RUN_RATE_WEIGHT) return unusedSlice;
+      const projectedClicks = (availableSoFar[i]! * SUFFIX_WEIGHTS[hour + 1]!) / seenWeight;
+      const excess = remaining[i]! - RUN_RATE_HEADROOM * projectedClicks * arms[i]!.arm.cpc;
+      return Math.max(0, Math.min(unusedSlice, excess));
+    });
     const donated = donations.reduce((a, b) => a + b, 0);
     const recipients = arms.map((_, i) => i).filter(hasSpare);
     const recipientShare = recipients.reduce((sum, i) => sum + shares[i]!, 0);

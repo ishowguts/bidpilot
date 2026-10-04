@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { paceCategory, type PacingArm } from './pacing.js';
 import { PUBLISHER_IDS } from './scenarios.js';
+import { armDay, hourTraffic } from './simulator.js';
+import { capacityEstimate, emptyPosterior, updatePosterior } from './posterior.js';
 
 // One arm's random day: CPC in paise, daily click capacity, apply rate, and a positive allocation weight.
 const armArb = fc.record({
@@ -85,5 +87,54 @@ describe('pacing', () => {
       expect(rows.reduce((s, h) => s + h.clicks, 0)).toBe(a.clicks);
       expect(rows.reduce((s, h) => s + h.applies, 0)).toBe(a.applies);
     }
+  });
+
+  // Regression (ADR-012): with a budget a little above the value of its clicks, the best software arm used to
+  // buy only 88% of its available clicks, because unused slices in quiet hours were given away for good.
+  it('an arm with budget above the value of its clicks buys nearly all of them', () => {
+    let ratio = 0;
+    let days = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      for (let day = 1; day <= 10; day++) {
+        const arms = PUBLISHER_IDS.map((publisherId) => ({
+          publisherId,
+          budget: publisherId === 3 ? 1.2 * 120 * 25 : 300,
+          arm: armDay(seed, 'stationary', day, 'software', publisherId),
+        }));
+        let available = 0;
+        for (let hour = 0; hour < 24; hour++) {
+          available += hourTraffic(seed, day, hour, 'software', 3, arms[2]!.arm).available;
+        }
+        ratio += paceCategory(seed, day, 'software', arms).arms[2]!.clicks / available;
+        days++;
+      }
+    }
+    expect(ratio / days).toBeGreaterThan(0.92);
+  });
+
+  // Regression (ADR-012): a policy that caps an arm at 1.2 × estimated capacity × CPC used to ratchet the cap down
+  // to about 83% of the arm's real capacity, because pacing under-delivered and the estimate learned that.
+  it('the capacity cap does not ratchet a capacity-limited arm below its capacity', () => {
+    let ratio = 0;
+    let days = 0;
+    for (let seed = 1; seed <= 5; seed++) {
+      let posterior = emptyPosterior();
+      for (let day = 1; day <= 30; day++) {
+        const estimate = capacityEstimate(posterior);
+        const budget = estimate === undefined ? 6000 : Math.min(6000, 1.2 * estimate * 25);
+        const arms = PUBLISHER_IDS.map((publisherId) => ({
+          publisherId,
+          budget: publisherId === 3 ? budget : 300,
+          arm: armDay(seed, 'stationary', day, 'software', publisherId),
+        }));
+        const best = paceCategory(seed, day, 'software', arms).arms[2]!;
+        posterior = updatePosterior(posterior, day, best, 0.95);
+        if (day > 20) {
+          ratio += best.clicks / 120;
+          days++;
+        }
+      }
+    }
+    expect(ratio / days).toBeGreaterThan(0.88);
   });
 });
