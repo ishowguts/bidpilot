@@ -7,7 +7,7 @@ export default defineConfig({
       {
         test: {
           name: 'pure',
-          include: ['packages/core/src/**/*.test.ts', 'experiments/src/**/*.test.ts', 'apps/web/src/**/*.test.ts'],
+          include: ['packages/core/src/**/*.test.ts', 'packages/db/src/**/*.test.ts', 'experiments/src/**/*.test.ts', 'apps/web/src/**/*.test.ts'],
         },
       },
       {

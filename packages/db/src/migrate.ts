@@ -4,11 +4,12 @@ import postgres from 'postgres';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { databaseUrl } from './url.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function run() {
-  const url = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/bidpilot';
+  const url = databaseUrl(process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/bidpilot');
   const sql = postgres(url, { max: 1, prepare: false });
   const db = drizzle(sql);
 

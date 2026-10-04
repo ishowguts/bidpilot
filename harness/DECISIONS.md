@@ -226,3 +226,10 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   97% (min 96.6%); after, 0 (min 98.8%, 0.1% quantile 99.3%). z = 3 gave the same picture (min 99.0%). The ADR-012
   regressions, the ADR-015 criteria and all outcome tests pass; experiment CPAs moved within their CIs and the
   results files were regenerated.
+
+## ADR-024 · 2026-10-05 · Validate DATABASE_URL before the driver sees it
+- The first Render deploy failed because `DATABASE_URL` in the dashboard held a shell command instead of the
+  connection string. postgres-js reported `ERR_INVALID_URL` with the raw value as `input`, so a real URL with a small
+  mistake (a quote, a trailing newline) would have printed its password into the deploy log.
+- `databaseUrl()` in `packages/db` checks the value (set, no whitespace, parses as a URL, `postgres:`/`postgresql:`
+  scheme, has a host) in `createClient`, `migrate` and `seed`, and its errors name the problem but never the value.

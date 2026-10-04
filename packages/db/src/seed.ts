@@ -1,4 +1,5 @@
 import postgres from 'postgres';
+import { databaseUrl } from './url.js';
 
 // Ids are fixed: the core simulator identifies publishers as 1..6 (pub-a .. pub-f).
 const PUBLISHERS = [
@@ -11,7 +12,7 @@ const PUBLISHERS = [
 ];
 
 async function seed() {
-  const url = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/bidpilot';
+  const url = databaseUrl(process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/bidpilot');
   const sql = postgres(url, { prepare: false });
 
   // Upsert publishers so running seed twice is safe and a wrong name or id is corrected.
@@ -24,7 +25,8 @@ async function seed() {
   }
   await sql`SELECT setval(pg_get_serial_sequence('publishers', 'id'), (SELECT max(id) FROM publishers))`;
   const unexpected = await sql`SELECT slug FROM publishers WHERE id > ${PUBLISHERS.length}`;
-  if (unexpected.length > 0) throw new Error(`unexpected publishers in database: ${unexpected.map((r) => r.slug).join(', ')}`);
+  if (unexpected.length > 0)
+    throw new Error(`unexpected publishers in database: ${unexpected.map((r) => r.slug).join(', ')}`);
 
   const count = await sql`SELECT count(*)::int AS n FROM publishers`;
   console.log(`seed: ${count[0].n} publishers in database`);

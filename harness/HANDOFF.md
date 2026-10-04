@@ -7,14 +7,13 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B18 Deploy prep, owner changes (B11 still awaits CI confirmation for a5e556a)
-- Doing now: (1) Supabase instead of Neon in render.yaml, §3/§13, ADR-022; (2) render.yaml region singapore;
-  (3) CORS origin normalization (trailing slash, case, path, quotes, missing scheme) with tests;
-  postgres-js `prepare: false` for the Supabase transaction pooler; `scripts/seed-prod.sh` that reads
-  DATABASE_URL_PROD from .env without printing it.
-- Next step: then B19 (LLM daily summary, §12) and add GEMINI_API_KEY/GEMINI_MODEL (sync: false) to render.yaml.
-  Run seed-prod only when the owner says so.
-- Files in flight: render.yaml, docs/ARCHITECTURE.md, harness/DECISIONS.md, apps/api/src/env.ts, apps/api/src/app.ts,
+- Task: B18 Deploy (B11 still awaits CI confirmation for a5e556a)
+- Doing now: done in this step: pacing fix (ADR-023, e903192, results fd36ddd); production DB migrated and seeded
+  with scripts/seed-prod.sh (counts in the Log); DATABASE_URL validation (ADR-024) after the first Render deploy
+  failed on a dashboard value that was a shell command.
+- Next step: owner fixes DATABASE_URL in the Render dashboard and redeploys; then set CORS_ORIGINS and the Vercel
+  project, verify the live dashboard, put URLs in STATE, mark B18 done. Meanwhile B19 (§12).
+- Files in flight: none
   packages/db/src/client.ts, scripts/seed-prod.sh
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
@@ -32,6 +31,8 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · Production DB (Supabase, Singapore) migrated and seeded via scripts/seed-prod.sh: 6 publishers, 2 campaigns (demo + baseline, day 30/30), 40 jobs, 1,440 allocations, 96,940 events, 92,942 clicks in both events and daily_stats.
+- 2026-10-05 · CI red on d6d1a67 (pacing property, seed -1036790155): root cause late-day stranded headroom, fixed with λ + 2σ (ADR-023, e903192); results regenerated (fd36ddd); ci-local green 3 times.
 - 2026-10-05 · B18 prepared (b841a94): demo seed, Render/Vercel configs; waiting for the owner's accounts.
 - 2026-10-05 · B17 done (d671b1b): endpoint matrix, happy + failure each: health (200/503), publishers (200/500), campaigns create (201/400), list (200/500), get (200/400/404/500), advance (200/400/404/409/500), events (200/400/413, idempotent), stats daily (200/400/404), summary (200/400/404/500), experiments (200/404/500). ci-local green.
 - 2026-10-05 · B16 done (96d48d7): experiments page, per-scenario tables incl. ablation rows, CPA bars with 95% CI whiskers. ci-local green.

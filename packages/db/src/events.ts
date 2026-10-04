@@ -3,7 +3,10 @@ import { type DbExecutor } from './client.js';
 import { events } from './schema.js';
 import type { EventPayload } from '@bidpilot/shared';
 
-export async function insertEvents(db: DbExecutor, payload: readonly EventPayload[]): Promise<{ accepted: number; duplicates: number }> {
+export async function insertEvents(
+  db: DbExecutor,
+  payload: readonly EventPayload[],
+): Promise<{ accepted: number; duplicates: number }> {
   if (payload.length === 0) return { accepted: 0, duplicates: 0 };
 
   const values = payload.map((e) => ({

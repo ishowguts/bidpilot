@@ -2,3 +2,4 @@
 export * from './schema.js';
 export * from './events.js';
 export { createClient, type Database, type DbExecutor } from './client.js';
+export { databaseUrl } from './url.js';
