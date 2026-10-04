@@ -35,3 +35,20 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
 ## ADR-008 · 2026-10-02 · LLM summary is numbers-in, grounding-checked
 - Why: the model may only phrase numbers computed in SQL; any number in its text that was not in the input rejects
   the summary. Stretch feature; the dashboard works without it.
+
+## ADR-009 · 2026-10-04 · Stream derivation by hashing the full key tuple; separate daily noise stream
+- Context: the first RNG (Mulberry32, streams derived by XOR of seed, day, hour, category hash and publisher) was
+  rejected in the owner audit: XOR keys collide across seeds and days (for example seed 1 day 2 and seed 2 day 1),
+  which breaks the independence and reproducibility required by §6.1.
+- Decision: every stream is a pure-rand `xoroshiro128+` generator whose 128-bit state comes from splitmix64 applied
+  to a hash of the whole key tuple. Numeric parts must be safe integers; string parts are absorbed character by
+  character with a type tag and length, so `1` and `'1'` and reordered tuples are different keys. Uniforms use 53
+  bits built from the high bits of two outputs (the low bits of xoroshiro128+ are weak).
+- Keys: `env(seed, day, hour, category, publisher)` for hourly traffic and applies, `env-day(seed, day, category,
+  publisher)` for the daily CPC and apply-rate noise (§5.1 noise is per day, not per hour), and
+  `policy(seed, policy, day)` for policy decisions. None of the environment keys include the policy, which gives
+  common random numbers across policies.
+- Samplers are exact: binomial and Poisson reduce large parameters with Knuth's beta and gamma splitting
+  (TAOCP 3.4.1) instead of normal approximations, so moment tests hold for all sizes.
+- Cost: about 3.5 µs to create a stream (BigInt hashing), about 10 s of the full 20-seed experiment. Acceptable
+  under the 60 s target; optimize by caching key prefixes if needed.

@@ -8,11 +8,13 @@ continue from this file alone.
 
 - Status: IN PROGRESS
 - Task: B05 RNG + samplers (rebuild)
-- Doing now: rewriting `packages/core/src/rng.ts` on pure-rand xoroshiro128+ with streams derived by splitmix64
+- Doing now: committing B05. Done: `packages/core/src/rng.ts` rewritten on pure-rand xoroshiro128+ with streams derived by splitmix64
   hashing of the full tuple; environment stream key (seed, day, hour, category, publisher), policy stream key
   (seed, policy, day). Samplers: uniform, normal, lognormal, gamma (Marsaglia-Tsang), beta, poisson, binomial.
-- Next step: moment tests (100k draws, fixed seed) and determinism/independence tests in `rng.test.ts`; then
-  rebuild B06 scenarios + simulator on the new streams.
+- Next step: B06. Review `scenarios.ts` (kept from before; it does not use the RNG), write `simulator.ts`
+  (hour-level events, §5.1 noise, traffic curve) and tests (observed CPA converges to true CPA ± 5%; drift on day 15).
+- Done in B05: moment tests over 100k draws for every sampler, determinism, collision and correlation tests.
+  The old simulator, pacing, posterior, policies and runCampaign files were deleted; B06-B09 rebuild them.
 - Files in flight: packages/core/src/rng.ts, packages/core/src/rng.test.ts
 - Open problems / gotchas:
   - Downstream core modules (simulator, pacing, policies, runCampaign) still use the old RNG class until B06-B09
