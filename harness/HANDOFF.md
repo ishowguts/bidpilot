@@ -7,12 +7,10 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B13 Parity test (B11 still awaits the owner's CI confirmation for a5e556a)
-- Doing now: `apps/api/src/parity.test.ts`: create a campaign via the API (thompson, compareBaseline false),
-  advance 5 days one at a time, read `allocations` back, compare with `runCampaign(config, createThompsonPolicy())`
-  allocations for days 1-5 (budget to the paisa, pBest/alpha/beta to float4 precision).
-- Next step: run tests, ci-local, mark B13 done, push.
-- Files in flight: apps/api/src/parity.test.ts
+- Task: B14 Web scaffold + campaign list (B11 still awaits the owner's CI confirmation for a5e556a)
+- Doing now: reviewing the existing apps/web scaffold against §3/§4 (Next.js 14 App Router, Tailwind, Recharts).
+- Next step: typed API client from packages/shared (zod-parsed responses), campaign list page `/`, create form.
+- Files in flight: apps/web/src/**
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
   - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
@@ -25,6 +23,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · B13 done (9964f8b): live allocations equal runCampaign for 5 days (thompson and greedy, drift, uneven jobs). ci-local green.
 - 2026-10-05 · B12 done (0df99f6): stats daily/summary with window SQL, experiments/latest, hand-computed fixture; ADR-020. ci-local green.
 - 2026-10-05 · B11 reopened: CI Typecheck red (TS2769). Fixed in a5e556a (@types/express 4, single @types/node 20, ADR-019); scripts/ci-local.sh reproduces CI. Awaiting owner confirmation.
 - 2026-10-04 · B11 done (6be34ac): campaign API with paired baseline, per-day transactions, crash-safe re-run; B02/B03 review fixes (migration 0002, publishers, pino-http, test DB). Next: B12.
