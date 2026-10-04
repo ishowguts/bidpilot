@@ -8,11 +8,14 @@ continue from this file alone.
 
 - Status: IN PROGRESS
 - Task: B11 Campaign API (rebuild)
-- Doing now: reading the db package (schema, migrations, seed) and planning B11.
+- Doing now: step 2 (migration 0002). Step 1 done: publishers from DB, pino-http, routes/middleware split, async
+  error wrapper, tests on `DATABASE_URL_TEST`, seed pins publisher ids 1-6, vitest projects (API files serial).
 - Plan:
   1. Fix the B03 review items first: `GET /api/publishers` reads the DB, pino-http wired, API tests use
      `DATABASE_URL_TEST`.
-  2. Migration 0002: allow scenario 'emergence' in the campaigns check (ADR-013).
+  2. Migration 0002 (B02 review): §7 CHECK constraints (none exist), 'emergence' in the scenario check (ADR-013),
+     seed smallint -> integer, events.job_id bigserial -> bigint, composite primary keys for allocations and
+     daily_summaries instead of unique indexes. Generate with drizzle-kit so the snapshot stays in sync.
   3. Shared zod schemas for campaigns in `packages/shared` (create body, advance body, responses).
   4. Core: pure event expansion (hourly arm results to per-click/apply events with deterministic idempotency
      keys, §7) so the API only does I/O.
@@ -21,7 +24,7 @@ continue from this file alone.
      refresh view → bump current_day. 409 when finished.
   6. Tests: create + advance 3 days; advance past end → 409; validation failures; re-running a crashed day does
      not double count.
-- Next step: step 1.
+- Next step: step 2.
 - Files in flight: apps/api, packages/db, packages/shared, packages/core
 - Open problems / gotchas:
   - `@bidpilot/core` resolves to `dist/` (package.json main). After editing core, run `pnpm typecheck` (tsc

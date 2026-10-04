@@ -12,8 +12,13 @@ export const eventSchema = z.object({
 
 export type EventPayload = z.infer<typeof eventSchema>;
 
+export const MAX_EVENTS_PER_BATCH = 1000;
+
 export const eventBatchSchema = z.object({
-  events: z.array(eventSchema).min(1).max(1000),
+  events: z.array(eventSchema).min(1).max(MAX_EVENTS_PER_BATCH),
 });
+
+export const eventBatchResultSchema = z.object({ accepted: z.number().int(), duplicates: z.number().int() });
+export type EventBatchResult = z.infer<typeof eventBatchResultSchema>;
 
 export type EventBatchPayload = z.infer<typeof eventBatchSchema>;

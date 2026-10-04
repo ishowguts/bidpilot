@@ -1,8 +1,9 @@
+import { createClient } from '@bidpilot/db';
 import { parseEnv } from './env.js';
 import { createApp } from './app.js';
 
 const env = parseEnv();
-const app = createApp(env);
+const app = createApp({ env, db: createClient(env.DATABASE_URL) });
 
 app.listen(env.PORT, () => {
   console.log(`api: listening on port ${env.PORT}`);

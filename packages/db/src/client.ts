@@ -8,3 +8,6 @@ export function createClient(connectionString: string) {
 }
 
 export type Database = ReturnType<typeof createClient>;
+
+/** A database handle or an open transaction; query helpers accept either. */
+export type DbExecutor = Database | Parameters<Parameters<Database['transaction']>[0]>[0];

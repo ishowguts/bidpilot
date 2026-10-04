@@ -1,9 +1,9 @@
 import { sql } from 'drizzle-orm';
-import { type Database } from './client.js';
+import { type DbExecutor } from './client.js';
 import { events } from './schema.js';
 import type { EventPayload } from '@bidpilot/shared';
 
-export async function insertEvents(db: Database, payload: EventPayload[]) {
+export async function insertEvents(db: DbExecutor, payload: readonly EventPayload[]): Promise<{ accepted: number; duplicates: number }> {
   if (payload.length === 0) return { accepted: 0, duplicates: 0 };
 
   const values = payload.map((e) => ({
@@ -27,7 +27,7 @@ export async function insertEvents(db: Database, payload: EventPayload[]) {
   };
 }
 
-export async function refreshDailyStats(db: Database) {
+export async function refreshDailyStats(db: DbExecutor): Promise<void> {
   // REFRESH MATERIALIZED VIEW CONCURRENTLY requires a unique index
   // which was added in the migration.
   await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY daily_stats`);
