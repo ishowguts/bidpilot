@@ -7,10 +7,11 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B17 Test pass (B11 still awaits the owner's CI confirmation for a5e556a)
-- Doing now: auditing every endpoint in §8 for one happy-path and one failure-path test; adding the missing ones.
-- Next step: list endpoint × test matrix in this file, fill gaps in apps/api/src/*.test.ts, ci-local, mark done.
-- Files in flight: apps/api/src/app.test.ts
+- Task: B18 Deploy (B11 still awaits the owner's CI confirmation for a5e556a)
+- Doing now: preparing everything that needs no credentials: a demo seed script (campaign + paired baseline
+  advanced to day 30, idempotent), Render blueprint for the API, Vercel settings for the web app, deploy notes.
+- Next step: ask the owner for Neon/Render/Vercel accounts and dashboard steps; nothing is deployed without them.
+- Files in flight: apps/api/src/seedDemo.ts, render.yaml, docs/ARCHITECTURE.md §13
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
   - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
@@ -27,6 +28,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · B17 done (d671b1b): endpoint matrix, happy + failure each: health (200/503), publishers (200/500), campaigns create (201/400), list (200/500), get (200/400/404/500), advance (200/400/404/409/500), events (200/400/413, idempotent), stats daily (200/400/404), summary (200/400/404/500), experiments (200/404/500). ci-local green.
 - 2026-10-05 · B16 done (96d48d7): experiments page, per-scenario tables incl. ablation rows, CPA bars with 95% CI whiskers. ci-local green.
 - 2026-10-05 · B15 done (5336111): dashboard tiles, four charts, advance controls, loading/error/empty states (checked in headless Chrome). ci-local green.
 - 2026-10-05 · B14 done (4def352): web scaffold, typed zod client, list + create form; web joins typecheck/lint/test and CI builds it (ADR-021). ci-local green.

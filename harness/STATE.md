@@ -1,6 +1,6 @@
 # BidPilot — State
 
-Last updated: 2026-10-05 · Phase: **Day 4 — Live path and dashboard** · Next task: **B17**
+Last updated: 2026-10-05 · Phase: **Day 5 — Ship** · Next task: **B18**
 
 Build order note: TalentLens is built first. Start BidPilot after TalentLens reaches T24 (deployed), unless the owner
 says otherwise.
@@ -25,7 +25,7 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | B14 | Web scaffold + campaign list | done (2026-10-05, 4def352) |
 | B15 | Dashboard | done (2026-10-05, 5336111) |
 | B16 | Experiments page | done (2026-10-05, 96d48d7) |
-| B17 | Test pass | todo |
+| B17 | Test pass | done (2026-10-05, d671b1b) |
 | B18 | Deploy | todo |
 | B19 | LLM daily summary (stretch) | todo |
 | B20 | README | todo |
