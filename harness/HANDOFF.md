@@ -6,27 +6,20 @@ continue from this file alone.
 
 ## Active session
 
-- Status: IN PROGRESS (waiting for owner review of the measured table before B08 is marked done)
-- Task: B08 Posterior + Thompson policy (rebuild)
-- Done this session for B08 (owner decision #2):
-  1. Capacity defect found and fixed in pacing (cf34cee, ADR-012) with two regression tests that fail on the old
-     code. The estimator change (discounted max) was tried and reverted: no difference once pacing was fixed.
-  2. Floor ablation measured: 1% beats 3% in every scenario with paired CIs excluding zero; default is now 1%
-     (08cae89, ADR-014).
-  3. Emergence scenario added (08cae89, ADR-013). Needs a DB migration for the scenario check in B11.
-  Full numbers: see the table in the owner report; raw output was produced by a throwaway script (not committed).
-- Proposed restated criteria (awaiting owner approval; then write them into §10 + ADR + tests):
-  - Hard: Thompson CPA < equal on >= 18/20 seeds in every scenario (measured 20/20 in all three).
-  - Convergence: true best arm has the highest pBest on day 15 in >= 60/80 (seed, category) pairs
-    (measured 70/80 at f = 1%). pBest > 0.8 on day 30 is reported only (measured 43/80).
-  - Drift: degraded arm's budget on day 20 below day 14 in >= 60/80 pairs (measured 71/80); its pBest lower in
-    >= 60/80 (76/80); its day-20 budget below the γ = 1 run's in >= 60/80 (64/80).
-  - Greedy: emergence, Thompson CPA < greedy on >= 18/20 (measured 20/20). Stationary and drift: no superiority
-    claim; greedy's mean CPA is lower (375.0 vs 381.6, 428.0 vs 437.9) and regret is equal within CI.
-  - Oracle CPA <= every policy on every seed (holds in all three scenarios).
-- Next step: on approval, write §10 criteria + ADR-015, add `thompson.test.ts` (convergence, drift, outcomes),
-  mark B08 and B09 done, push. Then B10 (experiments CLI with 3 scenarios + floor ablation; runtime target < 60 s
-  needs attention: the measurement script took 62 s for 6 variants × 3 scenarios).
+- Status: IN PROGRESS
+- Task: B08 + B09 completion (owner approved the restated criteria on 2026-10-04; CI green on c6ea8c1)
+- Doing now: writing the approved criteria into ARCHITECTURE §10 + ADR-015, adding `policies/thompson.test.ts`
+  (unit tests, convergence, drift) and `outcomes.test.ts` (hard criterion, emergence vs greedy, oracle sanity),
+  plus greedy/oracle unit tests. Floor default stays 1% (ADR-014).
+- Approved criteria (80 pairs = 20 seeds x 4 categories, floor 1%):
+  - Hard: Thompson CPA < equal on >= 18/20 seeds in every scenario.
+  - Day 15 stationary: true best arm has the highest pBest in >= 60/80 pairs. pBest > 0.8 on day 30: reported only.
+  - Drift: degraded arm's day-20 budget < day-14 budget in >= 60/80; day-20 pBest < day-14 pBest in >= 60/80;
+    day-20 budget below the γ = 1 run's in >= 60/80.
+  - Emergence: Thompson CPA < greedy on >= 18/20. Stationary/drift vs greedy: no claim, reported.
+  - Oracle CPA <= every policy on every seed, every scenario.
+- Next step: mark B08 and B09 done with real hashes, push; then B10 (CLI, `--ablation` optional flag so the
+  default run stays under 60 s; record both runtimes), then B11.
 - Files in flight: none uncommitted except throwaway `packages/core/src/dbg*.tmp.ts` (delete them, never commit).
 - Open problems / gotchas:
   - Days are 1-based in core. Policy interface has a `day` argument (ADR-011).
