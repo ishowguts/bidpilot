@@ -105,3 +105,17 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   clearly different in stationary (−0.28% ± 1.01) or drift (+0.22% ± 0.90), so the floor stays above zero to keep
   the guarantee that every publisher keeps producing evidence.
 - Consequence: default `f = 0.01` in `policies/thompson.ts` and §6.2. The experiments report a 0/1/3% ablation.
+
+## ADR-015 · 2026-10-04 · Restated allocator criteria from measurement (owner approved)
+- Context: the original §10 criteria (`pBest` of the true best arm > 0.8 by day 15 for ≥ 18/20 seeds; budget off
+  the degraded arm within 5 days) do not hold for the specified design: the best arm is capacity-capped, so rivals
+  receive little budget and their posteriors stay wide. Measured with spec parameters: `pBest` > 0.8 on day 15 in
+  5-8 of 20 seeds per category. This is a property of the design, not a defect (posteriors were checked by hand).
+- Decision (owner, 2026-10-04): keep the algorithm and restate the criteria from measured numbers, with bars set as
+  meaningful claims and not moved to make a test pass. Measured values at floor 1% (80 seed × category pairs):
+  highest `pBest` on day 15 70/80 (bar 60); drift budget drop 71/80, `pBest` drop 76/80, below γ = 1 64/80 (bars 60);
+  `pBest` > 0.8 on day 30 43/80 (reported only).
+- Outcome criteria added by the owner: Thompson beats equal split on CPA on ≥ 18/20 seeds in every scenario (hard;
+  measured 20/20 in all three). Against greedy, Thompson wins clearly only in `emergence` (20/20, bar 18/20). In
+  stationary and drift greedy has about 2% lower mean CPA and equal regret within the confidence interval; the
+  README reports this rather than claiming superiority.

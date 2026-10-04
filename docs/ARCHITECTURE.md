@@ -340,10 +340,16 @@ whiskers per policy and scenario.
 - **core (most of the tests):**
   - samplers: Beta/Gamma/Poisson/Binomial sample means and variances within tolerance over 100k draws, fixed seed.
   - determinism: same inputs → identical outputs; environment stream identical across policies.
-  - Thompson: on a stationary scenario, `pBest` of the true best arm > 0.8 by day 15 for ≥ 18 of 20 seeds.
+  - Thompson convergence (stationary, 20 seeds × 4 categories = 80 pairs): on day 15 the true best arm has the
+    highest `pBest` in its category in ≥ 60/80 pairs. `pBest` > 0.8 on day 30 is reported, not asserted (ADR-015).
   - pacing (fast-check property): for random budgets, capacities and CPCs, day spend ≤ budget always; spend ≥ 0.97 ×
     budget whenever total capacity × CPC ≥ 1.2 × budget.
-  - drift: with γ = 0.95, the allocator moves budget off the degraded arm within 5 days of the change.
+  - drift (γ = 0.95, 80 pairs): the degraded arm's day-20 budget is below its day-14 budget in ≥ 60/80 pairs, its
+    day-20 `pBest` is below its day-14 `pBest` in ≥ 60/80, and its day-20 budget is below that of the same run with
+    γ = 1 in ≥ 60/80 (ADR-015).
+  - outcomes (20 seeds × 30 days, every scenario): Thompson CPA < equal split on ≥ 18/20 seeds (hard criterion);
+    in `emergence`, Thompson CPA < greedy on ≥ 18/20 seeds; oracle CPA ≤ every policy's CPA on every seed. Stationary
+    and drift make no claim against greedy; those numbers are reported as measured (ADR-015).
 - **api (Supertest, real Postgres test DB):** idempotent ingestion (same batch twice → second returns all
   duplicates, row count unchanged); campaign create/advance happy path; advance past end → 409; validation failures.
 - **parity:** advancing a campaign through the API produces the same allocations as `runCampaign` in memory with the
