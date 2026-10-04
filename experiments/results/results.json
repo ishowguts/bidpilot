@@ -1,0 +1,457 @@
+{
+  "command": "pnpm exp --seeds 20 --days 30 --scenario all --ablation",
+  "commit": "b38fa01",
+  "generatedAt": "2026-10-04T16:52:50.512Z",
+  "runtimeSeconds": 60.47712020899999,
+  "options": {
+    "seeds": 20,
+    "days": 30,
+    "scenarios": [
+      "stationary",
+      "drift",
+      "emergence"
+    ],
+    "dailyBudget": 20000,
+    "ablation": true
+  },
+  "rows": [
+    {
+      "scenario": "stationary",
+      "policy": "equal",
+      "applies": {
+        "mean": 1256.55,
+        "ci": 18.192236133824117
+      },
+      "cpa": {
+        "mean": 477.6087247857433,
+        "ci": 6.779412741467021
+      },
+      "cpaVsEqualPct": {
+        "mean": 0,
+        "ci": 0
+      },
+      "regret": {
+        "mean": 522.35,
+        "ci": 23.703082134750126
+      },
+      "pacingRatio": 0.9993414658333344,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 0,
+      "winsVsGreedy": 0
+    },
+    {
+      "scenario": "stationary",
+      "policy": "greedy",
+      "applies": {
+        "mean": 1567.8,
+        "ci": 51.181536821777314
+      },
+      "cpa": {
+        "mean": 375.00014523734137,
+        "ci": 12.628408423395067
+      },
+      "cpaVsEqualPct": {
+        "mean": -21.461280348341795,
+        "ci": 2.549915819260562
+      },
+      "regret": {
+        "mean": 211.1,
+        "ci": 48.52869869258049
+      },
+      "pacingRatio": 0.9752474683333326,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 0
+    },
+    {
+      "scenario": "stationary",
+      "policy": "thompson",
+      "applies": {
+        "mean": 1572.25,
+        "ci": 17.98280396332987
+      },
+      "cpa": {
+        "mean": 381.5805364414391,
+        "ci": 4.409479323177255
+      },
+      "cpaVsEqualPct": {
+        "mean": -20.041500844355255,
+        "ci": 1.412085355689461
+      },
+      "regret": {
+        "mean": 206.65,
+        "ci": 17.45410823536894
+      },
+      "pacingRatio": 0.9993269575000003,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 5
+    },
+    {
+      "scenario": "stationary",
+      "policy": "oracle",
+      "applies": {
+        "mean": 1778.9,
+        "ci": 21.062267252388867
+      },
+      "cpa": {
+        "mean": 334.44344841543796,
+        "ci": 4.085245056977238
+      },
+      "cpaVsEqualPct": {
+        "mean": -29.927754723880486,
+        "ci": 1.1368707951215817
+      },
+      "regret": {
+        "mean": 0,
+        "ci": 0
+      },
+      "pacingRatio": 0.9909478766666658,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 20
+    },
+    {
+      "scenario": "stationary",
+      "policy": "thompson",
+      "floor": 0,
+      "applies": {
+        "mean": 1577.25,
+        "ci": 22.35840640645447
+      },
+      "cpa": {
+        "mean": 380.48857934464127,
+        "ci": 5.423044574712384
+      },
+      "cpaVsEqualPct": {
+        "mean": -20.278526149803046,
+        "ci": 1.4627073180359846
+      },
+      "regret": {
+        "mean": 201.65,
+        "ci": 18.977402359326298
+      },
+      "pacingRatio": 0.9993331008333345,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 7
+    },
+    {
+      "scenario": "stationary",
+      "policy": "thompson",
+      "floor": 0.03,
+      "applies": {
+        "mean": 1548.65,
+        "ci": 19.07374404356266
+      },
+      "cpa": {
+        "mean": 387.4311856932055,
+        "ci": 4.765556986887633
+      },
+      "cpaVsEqualPct": {
+        "mean": -18.824412205584515,
+        "ci": 1.3606385331188455
+      },
+      "regret": {
+        "mean": 230.25,
+        "ci": 20.60855566428087
+      },
+      "pacingRatio": 0.9993353966666676,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 4
+    },
+    {
+      "scenario": "drift",
+      "policy": "equal",
+      "applies": {
+        "mean": 1169.25,
+        "ci": 17.18292351708751
+      },
+      "cpa": {
+        "mean": 513.2834712861547,
+        "ci": 7.411532647029154
+      },
+      "cpaVsEqualPct": {
+        "mean": 0,
+        "ci": 0
+      },
+      "regret": {
+        "mean": 448.15,
+        "ci": 23.60121583280638
+      },
+      "pacingRatio": 0.9993414658333344,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 0,
+      "winsVsGreedy": 0
+    },
+    {
+      "scenario": "drift",
+      "policy": "greedy",
+      "applies": {
+        "mean": 1364.45,
+        "ci": 28.80981778557944
+      },
+      "cpa": {
+        "mean": 428.04157920056224,
+        "ci": 9.841249136262995
+      },
+      "cpaVsEqualPct": {
+        "mean": -16.578016749128544,
+        "ci": 1.8079840391304565
+      },
+      "regret": {
+        "mean": 252.95,
+        "ci": 34.0710555241214
+      },
+      "pacingRatio": 0.9713817099999993,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 0
+    },
+    {
+      "scenario": "drift",
+      "policy": "thompson",
+      "applies": {
+        "mean": 1370.15,
+        "ci": 17.18922882037883
+      },
+      "cpa": {
+        "mean": 437.91353651565214,
+        "ci": 5.5155042778519165
+      },
+      "cpaVsEqualPct": {
+        "mean": -14.634651417275672,
+        "ci": 1.2571476940234563
+      },
+      "regret": {
+        "mean": 247.25,
+        "ci": 19.106112005803
+      },
+      "pacingRatio": 0.9993272708333346,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 5
+    },
+    {
+      "scenario": "drift",
+      "policy": "oracle",
+      "applies": {
+        "mean": 1617.4,
+        "ci": 24.230795873346576
+      },
+      "cpa": {
+        "mean": 360.7979165730393,
+        "ci": 5.531597732143085
+      },
+      "cpaVsEqualPct": {
+        "mean": -29.671875786462362,
+        "ci": 1.1517960479275935
+      },
+      "regret": {
+        "mean": 0,
+        "ci": 0
+      },
+      "pacingRatio": 0.9716290649999998,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 20
+    },
+    {
+      "scenario": "drift",
+      "policy": "thompson",
+      "floor": 0,
+      "applies": {
+        "mean": 1367.55,
+        "ci": 19.221369739279222
+      },
+      "cpa": {
+        "mean": 438.82938868397497,
+        "ci": 6.17641764367073
+      },
+      "cpaVsEqualPct": {
+        "mean": -14.456303917713957,
+        "ci": 1.3715501654972115
+      },
+      "regret": {
+        "mean": 249.85,
+        "ci": 19.557175414864055
+      },
+      "pacingRatio": 0.999344125,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 6
+    },
+    {
+      "scenario": "drift",
+      "policy": "thompson",
+      "floor": 0.03,
+      "applies": {
+        "mean": 1349.85,
+        "ci": 19.38488587594863
+      },
+      "cpa": {
+        "mean": 444.6056490633379,
+        "ci": 6.49828819400314
+      },
+      "cpaVsEqualPct": {
+        "mean": -13.336645947165303,
+        "ci": 1.3386643851721554
+      },
+      "regret": {
+        "mean": 267.55,
+        "ci": 18.243491863830727
+      },
+      "pacingRatio": 0.9993418441666665,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 4
+    },
+    {
+      "scenario": "emergence",
+      "policy": "equal",
+      "applies": {
+        "mean": 1492.9,
+        "ci": 19.947404840717343
+      },
+      "cpa": {
+        "mean": 401.9448890096135,
+        "ci": 5.3050548616444
+      },
+      "cpaVsEqualPct": {
+        "mean": 0,
+        "ci": 0
+      },
+      "regret": {
+        "mean": 1074.15,
+        "ci": 31.451964211399126
+      },
+      "pacingRatio": 0.9993414658333344,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 0,
+      "winsVsGreedy": 3
+    },
+    {
+      "scenario": "emergence",
+      "policy": "greedy",
+      "applies": {
+        "mean": 1614.5,
+        "ci": 63.814283968588754
+      },
+      "cpa": {
+        "mean": 364.96050502130254,
+        "ci": 14.732102744221969
+      },
+      "cpaVsEqualPct": {
+        "mean": -9.136144032830904,
+        "ci": 3.811220533174291
+      },
+      "regret": {
+        "mean": 952.55,
+        "ci": 65.43366916223655
+      },
+      "pacingRatio": 0.975295414166666,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 17,
+      "winsVsGreedy": 0
+    },
+    {
+      "scenario": "emergence",
+      "policy": "thompson",
+      "applies": {
+        "mean": 2172.5,
+        "ci": 52.15651764481799
+      },
+      "cpa": {
+        "mean": 276.70287495859895,
+        "ci": 6.81647625090476
+      },
+      "cpaVsEqualPct": {
+        "mean": -31.13323541000036,
+        "ci": 1.6914053470329555
+      },
+      "regret": {
+        "mean": 394.55,
+        "ci": 33.28825084314561
+      },
+      "pacingRatio": 0.9993352391666674,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 20
+    },
+    {
+      "scenario": "emergence",
+      "policy": "oracle",
+      "applies": {
+        "mean": 2567.05,
+        "ci": 28.83341650989397
+      },
+      "cpa": {
+        "mean": 233.0615504465026,
+        "ci": 2.6428310331072002
+      },
+      "cpaVsEqualPct": {
+        "mean": -41.98024554093804,
+        "ci": 0.9002980203914164
+      },
+      "regret": {
+        "mean": 0,
+        "ci": 0
+      },
+      "pacingRatio": 0.9965841708333333,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 20
+    },
+    {
+      "scenario": "emergence",
+      "policy": "thompson",
+      "floor": 0,
+      "applies": {
+        "mean": 2216.35,
+        "ci": 54.04243729434329
+      },
+      "cpa": {
+        "mean": 271.23530147028924,
+        "ci": 6.800829111714756
+      },
+      "cpaVsEqualPct": {
+        "mean": -32.48329156072354,
+        "ci": 1.7918997575416082
+      },
+      "regret": {
+        "mean": 350.7,
+        "ci": 40.95127552340965
+      },
+      "pacingRatio": 0.9992712600000007,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 20
+    },
+    {
+      "scenario": "emergence",
+      "policy": "thompson",
+      "floor": 0.03,
+      "applies": {
+        "mean": 2096.45,
+        "ci": 38.72853027327222
+      },
+      "cpa": {
+        "mean": 286.42507393186406,
+        "ci": 5.207032733722691
+      },
+      "cpaVsEqualPct": {
+        "mean": -28.71155567801033,
+        "ci": 1.3206842942132575
+      },
+      "regret": {
+        "mean": 470.6,
+        "ci": 22.8568632961743
+      },
+      "pacingRatio": 0.9993394725000005,
+      "overdeliveryDays": 0,
+      "winsVsEqual": 20,
+      "winsVsGreedy": 20
+    }
+  ]
+}
