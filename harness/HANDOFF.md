@@ -7,13 +7,14 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B18 Deploy (B11 still awaits CI confirmation for a5e556a)
-- Doing now: done in this step: pacing fix (ADR-023, e903192, results fd36ddd); production DB migrated and seeded
-  with scripts/seed-prod.sh (counts in the Log); DATABASE_URL validation (ADR-024) after the first Render deploy
-  failed on a dashboard value that was a shell command.
-- Next step: owner fixes DATABASE_URL in the Render dashboard and redeploys; then set CORS_ORIGINS and the Vercel
-  project, verify the live dashboard, put URLs in STATE, mark B18 done. Meanwhile B19 (§12).
-- Files in flight: none
+- Task: B19 LLM daily summary (stretch); B18 waits on the Vercel deploy (owner)
+- Doing now: planning §12: `GET /campaigns/:id/summary/:day`; numbers from SQL (spend, budget, applies, CPA and
+  budget share per publisher, share change vs yesterday), rounded; model call via @google/genai with JSON mode,
+  thinking off, zod-validated `{ text }`; grounding check (every number in text must be in the input); template
+  fallback; cache grounded results in `daily_summaries`.
+- Next step: shared schema, services/summary.ts (numbers + grounding, pure parts unit-tested), llm client behind
+  an interface with a fake for tests, route, env (GEMINI_API_KEY, GEMINI_MODEL optional), render.yaml entries.
+- Files in flight: apps/api/src/services/summary.ts, apps/api/src/llm.ts, apps/api/src/routes/summary.ts
   packages/db/src/client.ts, scripts/seed-prod.sh
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
@@ -31,6 +32,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · B11 done: owner confirmed CI green on GitHub at fd36ddd. API live on Render (owner verified).
 - 2026-10-05 · Production DB (Supabase, Singapore) migrated and seeded via scripts/seed-prod.sh: 6 publishers, 2 campaigns (demo + baseline, day 30/30), 40 jobs, 1,440 allocations, 96,940 events, 92,942 clicks in both events and daily_stats.
 - 2026-10-05 · CI red on d6d1a67 (pacing property, seed -1036790155): root cause late-day stranded headroom, fixed with λ + 2σ (ADR-023, e903192); results regenerated (fd36ddd); ci-local green 3 times.
 - 2026-10-05 · B18 prepared (b841a94): demo seed, Render/Vercel configs; waiting for the owner's accounts.

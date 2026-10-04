@@ -19,7 +19,7 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | B08 | Posterior + Thompson policy | done (2026-10-04, 13eace5) |
 | B09 | Greedy + oracle policies | done (2026-10-04, 99825a7) |
 | B10 | Experiments CLI | done (2026-10-04, 5293224) |
-| B11 | Campaign API | in progress (6be34ac; CI red on Typecheck, reopened until CI is green) |
+| B11 | Campaign API | done (2026-10-05, 6be34ac; CI fix a5e556a, green on GitHub at fd36ddd) |
 | B12 | Stats API | done (2026-10-05, 0df99f6) |
 | B13 | Parity test | done (2026-10-05, 9964f8b) |
 | B14 | Web scaffold + campaign list | done (2026-10-05, 4def352) |
@@ -54,7 +54,7 @@ fix (ADR-023); every CPA moved within its confidence interval.
 ## Live URLs
 
 - Web: —
-- API: —
+- API: https://bidpilot-api-jcys.onrender.com (Render, Singapore; health ok, demo pair at day 30, owner verified 2026-10-05)
 
 ## Owner-only items
 
