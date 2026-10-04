@@ -156,3 +156,13 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   rolls the whole day back, and re-sent events are deduplicated by their deterministic keys.
 - Allocations are rounded down to paise in core (`allocateDay`), the precision of `allocations.budget`, so the live
   path stores exactly what the in-memory path paces.
+
+## ADR-019 · 2026-10-05 · Type packages match the runtime; local checks reproduce CI from a fresh clone
+- CI failed on Typecheck (`apps/api/src/app.ts(34,11): TS2769`) while local checks passed. Two defects:
+  `@types/express` was ^5 against the Express 4 runtime, and its `@types/node: *` pulled a second `@types/node`
+  (26.x), so helmet's `IncomingMessage` and Express's differed. Fix: `@types/express` ^4.17 (matches `express` ^4)
+  and a workspace override pinning every `@types/node` to ^20 (CI runs Node 20).
+- Local runs passed because `tsc --build` trusted a stale `apps/api/tsconfig.tsbuildinfo` and skipped the project.
+- `scripts/ci-local.sh [ref]` repeats `ci.yml` on a fresh clone of a committed ref: Node 20, frozen install, fresh
+  databases (`bidpilot_ci`, `bidpilot_ci_test`), migrate and seed, guard, lint, typecheck, test. A task is marked
+  done only after it passes on the task's commit.

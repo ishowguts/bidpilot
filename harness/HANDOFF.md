@@ -8,8 +8,7 @@ continue from this file alone.
 
 - Status: IN PROGRESS
 - Task: B11 Campaign API (reopened: CI red on 0c832b0 and f7cc685)
-- Doing now: reproducing CI in a fresh clone (`pnpm install --frozen-lockfile`, then `pnpm typecheck`). CI fails with
-  `apps/api/src/app.ts(34,11): error TS2769: No overload matches this call`; local passes.
+- Doing now: fix committed (types pinned, ADR-019, scripts/ci-local.sh); running ci-local on HEAD, then push.
 - Next step: find the root cause (lockfile versus node_modules mismatch around pino-http/express types), fix, add a
   local script that reproduces CI from a fresh clone, push, wait for the owner to confirm CI is green. Then B12.
 - Files in flight: apps/api/src/app.ts, apps/api/package.json, pnpm-lock.yaml
@@ -18,6 +17,8 @@ continue from this file alone.
   - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
     them, before running API tests.
   - Days are 1-based in core; the live path maps day d to `start_date + d - 1` (IST dates).
+  - Local `tsc --build` can trust a stale tsbuildinfo; before marking a task done run `sh scripts/ci-local.sh`
+    (fresh clone, Node 20, frozen install), which matches CI exactly (ADR-019).
   - `.env` exists and must never be printed or overwritten. Never name any tool or assistant in code, comments or docs.
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 

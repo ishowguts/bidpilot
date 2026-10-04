@@ -103,6 +103,7 @@ be able to continue from HANDOFF alone without asking a question.
 | Experiments | `pnpm exp --seeds 20 --days 30 --scenario all` |
 | Ownership guard, full scan | `node scripts/guard.mjs all` |
 | Checkpoint commit | `sh scripts/checkpoint.sh B08 "done X, next Y"` |
+| CI reproduction (fresh clone, Node 20) | `sh scripts/ci-local.sh [ref]` |
 
 Before the monorepo exists (task T01), only the harness and docs are present.
 
