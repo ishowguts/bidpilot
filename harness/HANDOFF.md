@@ -6,36 +6,30 @@ continue from this file alone.
 
 ## Active session
 
-- Status: IN PROGRESS
+- Status: IN PROGRESS (waiting for owner review of the measured table before B08 is marked done)
 - Task: B08 Posterior + Thompson policy (rebuild)
-- Doing now: owner decision #2 (2026-10-04), in order:
-  1. Investigate whether the capacity cap underestimates publisher C's capacity. If so it is a defect: fix, add a
-     regression test, ADR, re-measure all four policies.
-  2. Add a floor ablation (0%, 1%, 3%) to the experiment output. Keep 3% unless measurements clearly favour
-     another value in every scenario; ADR either way.
-  3. Keep stationary and drift unchanged. Add a third scenario "emergence": a publisher that starts poor improves
-     on day 10 to become the best arm in its category. Report all three scenarios.
-  4. Restate the greedy criteria from measured numbers (no thresholds tuned to pass). Hard criterion in every
-     scenario: Thompson CPA beats equal on >= 18/20 seeds.
-  Then report the new table to the owner BEFORE marking B08 done.
-  Earlier measurement (before these changes), mean over 20 seeds: stationary CPA thompson 392.1, equal 478.2,
-  greedy 377.3, oracle 336.3; drift 444.7 / 513.7 / 426.5 / 361.0. Thompson spent 37.7% on C vs oracle 53.8%.
-- Next step: tests: discount update unit tests (γ once per day, skipped days, γ = 1 equals plain counts, fold
-  of full history equals incremental updates), convergence (true best arm pBest > 0.8 by day 15 for >= 18/20
-  seeds), drift (budget off the degraded arm within 5 days of day 15 with γ = 0.95). Then B09.
-- Files in flight: packages/core/src/posterior.ts, policies/thompson.ts (written, no tests yet)
-- Measured on 20 seeds x 30 days, default budget, spec parameters (γ 0.95, floor 3%, 2,000 draws):
-  - pBest(true best arm) > 0.8 on day 15: software 7, sales 8, healthcare 6, logistics 5 of 20 seeds
-    (γ = 1: 11, 12, 9, 11). Reached 0.8 on any day up to 15: 14, 14, 11, 10.
-  - True best arm has the highest pBest on day 15: 20, 17, 16, 16 of 20 (γ = 1: 18, 18, 16, 18).
-  - Drift: degraded arm's budget on day 20 below half its day-14 budget: 5, 5, 7, 5 of 20 (γ = 1: 1, 2, 4, 2).
-  - Cause: the best arm is capacity-capped (about 120 clicks a day), and rivals receive little budget, so their
-    posteriors stay wide. Not a code bug: posteriors and pBest were checked by hand on seed 3.
-  - Fixed on the way: integer-click rounding on small budgets made arms look capacity-limited and capped them for
-    good. The limited rule now needs unspent > 5% of the allocation and > 3 clicks' worth.
+- Done this session for B08 (owner decision #2):
+  1. Capacity defect found and fixed in pacing (cf34cee, ADR-012) with two regression tests that fail on the old
+     code. The estimator change (discounted max) was tried and reverted: no difference once pacing was fixed.
+  2. Floor ablation measured: 1% beats 3% in every scenario with paired CIs excluding zero; default is now 1%
+     (08cae89, ADR-014).
+  3. Emergence scenario added (08cae89, ADR-013). Needs a DB migration for the scenario check in B11.
+  Full numbers: see the table in the owner report; raw output was produced by a throwaway script (not committed).
+- Proposed restated criteria (awaiting owner approval; then write them into §10 + ADR + tests):
+  - Hard: Thompson CPA < equal on >= 18/20 seeds in every scenario (measured 20/20 in all three).
+  - Convergence: true best arm has the highest pBest on day 15 in >= 60/80 (seed, category) pairs
+    (measured 70/80 at f = 1%). pBest > 0.8 on day 30 is reported only (measured 43/80).
+  - Drift: degraded arm's budget on day 20 below day 14 in >= 60/80 pairs (measured 71/80); its pBest lower in
+    >= 60/80 (76/80); its day-20 budget below the γ = 1 run's in >= 60/80 (64/80).
+  - Greedy: emergence, Thompson CPA < greedy on >= 18/20 (measured 20/20). Stationary and drift: no superiority
+    claim; greedy's mean CPA is lower (375.0 vs 381.6, 428.0 vs 437.9) and regret is equal within CI.
+  - Oracle CPA <= every policy on every seed (holds in all three scenarios).
+- Next step: on approval, write §10 criteria + ADR-015, add `thompson.test.ts` (convergence, drift, outcomes),
+  mark B08 and B09 done, push. Then B10 (experiments CLI with 3 scenarios + floor ablation; runtime target < 60 s
+  needs attention: the measurement script took 62 s for 6 variants × 3 scenarios).
+- Files in flight: none uncommitted except throwaway `packages/core/src/dbg*.tmp.ts` (delete them, never commit).
 - Open problems / gotchas:
-  - Days are 1-based in core (drift from day 15 = `DRIFT_DAY`). Policy interface has a `day` argument (ADR-011).
-  - Pacing recovery spends in the same hour (ADR-010). Observations carry spend rounded to paise.
+  - Days are 1-based in core. Policy interface has a `day` argument (ADR-011).
   - CI status cannot be checked from this machine (no `gh` CLI, private repo). Owner should glance at Actions.
   - B03 review: `GET /api/publishers` is a stub returning `[]`, pino-http is not wired, and the API test hardcodes
     the test DB URL instead of `DATABASE_URL_TEST`. Fix in B11.
@@ -44,6 +38,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-04 · B08: pacing defect fixed (cf34cee), emergence scenario + 1% floor (08cae89). Waiting for owner review.
 - 2026-10-04 · B07 done (bc1b3aa): pacing with same-hour recovery, equal policy, runCampaign, fast-check properties. Next: B08.
 - 2026-10-04 · B06 done (f5a682e): scenarios, hour-level simulator, CPA convergence and drift tests. Next: B07.
 - 2026-10-04 · B05 done (38d4057): pure-rand streams with hashed keys, exact samplers, moment tests. Next: B06.
