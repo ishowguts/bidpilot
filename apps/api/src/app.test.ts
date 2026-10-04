@@ -7,6 +7,12 @@ import { resetDb, testApp, testDb, testEnv } from './test/setup.js';
 
 const CAMPAIGN_ID = '00000000-0000-0000-0000-000000000001';
 
+// An app whose database cannot be reached: every query fails, so DB-backed routes must answer 500 INTERNAL.
+const downApp = createApp({
+  env: testEnv,
+  db: createClient('postgres://postgres:postgres@localhost:1/none'),
+});
+
 describe('GET /api/health', () => {
   it('reports the database as up', async () => {
     const res = await request(testApp).get('/api/health');
@@ -16,11 +22,7 @@ describe('GET /api/health', () => {
   });
 
   it('reports 503 when the database is unreachable', async () => {
-    const app = createApp({
-      env: testEnv,
-      db: createClient('postgres://postgres:postgres@localhost:1/none'),
-    });
-    const res = await request(app).get('/api/health');
+    const res = await request(downApp).get('/api/health');
     expect(res.status).toBe(503);
     expect(res.body).toEqual({ status: 'degraded', db: 'down' });
   });
@@ -32,6 +34,30 @@ describe('GET /api/publishers', () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(6);
     expect(res.body[0]).toEqual({ id: expect.any(Number), slug: 'pub-a', name: 'Publisher A' });
+  });
+
+  it('answers 500 with the error shape when the database is unreachable', async () => {
+    const res = await request(downApp).get('/api/publishers');
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({
+      error: { code: 'INTERNAL', message: 'internal server error' },
+      requestId: expect.any(String),
+    });
+  });
+});
+
+describe('database failures on other routes', () => {
+  it('list, read, stats and ingestion answer 500 INTERNAL without leaking details', async () => {
+    const id = '00000000-0000-0000-0000-000000000002';
+    for (const res of [
+      await request(downApp).get('/api/campaigns'),
+      await request(downApp).get(`/api/campaigns/${id}`),
+      await request(downApp).get(`/api/campaigns/${id}/stats/summary`),
+      await request(downApp).post(`/api/campaigns/${id}/advance`).send({ days: 1 }),
+    ]) {
+      expect(res.status).toBe(500);
+      expect(res.body.error).toEqual({ code: 'INTERNAL', message: 'internal server error' });
+    }
   });
 });
 

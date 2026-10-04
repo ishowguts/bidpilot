@@ -137,12 +137,17 @@ describe('campaigns API', () => {
     expect((await request(testApp).get(`/api/campaigns/${id}`)).body.finished).toBe(true);
   });
 
-  it('rejects advancing a baseline directly and invalid advance bodies', async () => {
+  it('rejects advancing a baseline directly, unknown campaigns and invalid advance bodies', async () => {
     const created = await request(testApp).post('/api/campaigns').send(body);
     const baseline = await request(testApp)
       .post(`/api/campaigns/${created.body.baselineId}/advance`)
       .send({ days: 1 });
     expect(baseline.status).toBe(409);
+    const missing = await request(testApp)
+      .post('/api/campaigns/00000000-0000-0000-0000-000000000000/advance')
+      .send({ days: 1 });
+    expect(missing.status).toBe(404);
+    expect((await request(testApp).post('/api/campaigns/nope/advance').send({ days: 1 })).status).toBe(400);
     for (const bad of [{ days: 0 }, { days: 31 }, { days: 1.5 }, {}]) {
       const res = await request(testApp).post(`/api/campaigns/${created.body.id}/advance`).send(bad);
       expect(res.status).toBe(400);
