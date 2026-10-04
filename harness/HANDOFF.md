@@ -7,14 +7,11 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B19 LLM daily summary (stretch); B18 waits on the Vercel deploy (owner)
-- Doing now: planning §12: `GET /campaigns/:id/summary/:day`; numbers from SQL (spend, budget, applies, CPA and
-  budget share per publisher, share change vs yesterday), rounded; model call via @google/genai with JSON mode,
-  thinking off, zod-validated `{ text }`; grounding check (every number in text must be in the input); template
-  fallback; cache grounded results in `daily_summaries`.
-- Next step: shared schema, services/summary.ts (numbers + grounding, pure parts unit-tested), llm client behind
-  an interface with a fake for tests, route, env (GEMINI_API_KEY, GEMINI_MODEL optional), render.yaml entries.
-- Files in flight: apps/api/src/services/summary.ts, apps/api/src/llm.ts, apps/api/src/routes/summary.ts
+- Task: B20 README
+- Doing now: README per TASKS B20: what it is, live links, diagram from §2, results table copied from
+  experiments/results/results.md, how to run, how real traffic differs (§14), status. Screenshot/GIF is the owner's.
+- Next step: write README.md, guard scan, ci-local, mark B20 done, push.
+- Files in flight: README.md
   packages/db/src/client.ts, scripts/seed-prod.sh
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
@@ -32,6 +29,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · B19 done (5059301, 023b1da): summary endpoint, grounding check, template fallback, fake-model tests; live model 4/4 grounded. Owner: set GEMINI_API_KEY and GEMINI_MODEL in Render to enable it there.
 - 2026-10-05 · B18 done: web https://bidpilot-ashen.vercel.app and API https://bidpilot-api-jcys.onrender.com live; demo dashboard (tiles, four charts), experiments page and campaign list verified on the live site. Demo summary: 2,429 applies, CPA ₹247, −35.4% vs equal split, pacing 99.9%, overdelivery ₹0.
 - 2026-10-05 · B11 done: owner confirmed CI green on GitHub at fd36ddd. API live on Render (owner verified).
 - 2026-10-05 · Production DB (Supabase, Singapore) migrated and seeded via scripts/seed-prod.sh: 6 publishers, 2 campaigns (demo + baseline, day 30/30), 40 jobs, 1,440 allocations, 96,940 events, 92,942 clicks in both events and daily_stats.
