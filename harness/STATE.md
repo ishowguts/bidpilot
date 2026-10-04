@@ -1,6 +1,6 @@
 # BidPilot — State
 
-Last updated: 2026-10-04 · Phase: **Day 2 — Rebuild after owner audit** · Next task: **B05**
+Last updated: 2026-10-04 · Phase: **Day 2 — Rebuild after owner audit** · Next task: **B10**
 
 Build order note: TalentLens is built first. Start BidPilot after TalentLens reaches T24 (deployed), unless the owner
 says otherwise.
@@ -16,8 +16,8 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | B05 | RNG + samplers | done (2026-10-04, 38d4057) |
 | B06 | Scenarios + simulator | done (2026-10-04, f5a682e) |
 | B07 | Pacing + equal policy + runCampaign | done (2026-10-04, bc1b3aa) |
-| B08 | Posterior + Thompson policy | todo (rebuilt by owner decision after audit) |
-| B09 | Greedy + oracle policies | todo (rebuilt by owner decision after audit) |
+| B08 | Posterior + Thompson policy | done (2026-10-04, 13eace5) |
+| B09 | Greedy + oracle policies | done (2026-10-04, 99825a7) |
 | B10 | Experiments CLI | todo (rebuilt by owner decision after audit) |
 | B11 | Campaign API | todo (rebuilt by owner decision after audit) |
 | B12 | Stats API | todo |

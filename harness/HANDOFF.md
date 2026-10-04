@@ -7,23 +7,18 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B08 + B09 completion (owner approved the restated criteria on 2026-10-04; CI green on c6ea8c1)
-- Doing now: writing the approved criteria into ARCHITECTURE §10 + ADR-015, adding `policies/thompson.test.ts`
-  (unit tests, convergence, drift) and `outcomes.test.ts` (hard criterion, emergence vs greedy, oracle sanity),
-  plus greedy/oracle unit tests. Floor default stays 1% (ADR-014).
-- Approved criteria (80 pairs = 20 seeds x 4 categories, floor 1%):
-  - Hard: Thompson CPA < equal on >= 18/20 seeds in every scenario.
-  - Day 15 stationary: true best arm has the highest pBest in >= 60/80 pairs. pBest > 0.8 on day 30: reported only.
-  - Drift: degraded arm's day-20 budget < day-14 budget in >= 60/80; day-20 pBest < day-14 pBest in >= 60/80;
-    day-20 budget below the γ = 1 run's in >= 60/80.
-  - Emergence: Thompson CPA < greedy on >= 18/20. Stationary/drift vs greedy: no claim, reported.
-  - Oracle CPA <= every policy on every seed, every scenario.
-- Next step: mark B08 and B09 done with real hashes, push; then B10 (CLI, `--ablation` optional flag so the
-  default run stays under 60 s; record both runtimes), then B11.
-- Files in flight: none uncommitted except throwaway `packages/core/src/dbg*.tmp.ts` (delete them, never commit).
+- Task: B10 Experiments CLI (rebuild)
+- Doing now: `experiments/run.ts` CLI: `pnpm exp --seeds 20 --days 30 --scenario stationary|drift|emergence|all
+  [--ablation]`. Writes `experiments/results/results.json` and `results.md` with command, commit, per (scenario,
+  policy) total applies, CPA mean ± 95% CI (t, n-1 df), paired % CPA change vs equal with CI, regret vs oracle,
+  mean pacing ratio, overdelivery count. `--ablation` adds Thompson floor 0/1/3% rows. Default run must stay
+  under 60 s; record both runtimes in STATE Measurements.
+- Next step: run the full experiment, copy numbers into STATE Measurements, mark B10 done, push. Then B11.
+- Files in flight: experiments/src/run.ts (plus a stats helper), experiments/results/*
 - Open problems / gotchas:
-  - Days are 1-based in core. Policy interface has a `day` argument (ADR-011).
-  - CI status cannot be checked from this machine (no `gh` CLI, private repo). Owner should glance at Actions.
+  - Days are 1-based in core. Policy interface has a `day` argument (ADR-011). Floor default 1% (ADR-014).
+  - Scenario `emergence` needs a migration for the campaigns check constraint in B11 (ADR-013).
+  - Full measurement with ablation took 62 s in a throwaway script; the default run excludes the ablation.
   - B03 review: `GET /api/publishers` is a stub returning `[]`, pino-http is not wired, and the API test hardcodes
     the test DB URL instead of `DATABASE_URL_TEST`. Fix in B11.
   - `.env` exists and must never be printed or overwritten. Never name any tool or assistant in code, comments or docs.
@@ -31,6 +26,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-04 · B08 done (13eace5) and B09 done (99825a7): criteria restated per ADR-015 (owner approved), all tests pass. CI green on c6ea8c1 (owner checked). Next: B10.
 - 2026-10-04 · B08: pacing defect fixed (cf34cee), emergence scenario + 1% floor (08cae89). Waiting for owner review.
 - 2026-10-04 · B07 done (bc1b3aa): pacing with same-hour recovery, equal policy, runCampaign, fast-check properties. Next: B08.
 - 2026-10-04 · B06 done (f5a682e): scenarios, hour-level simulator, CPA convergence and drift tests. Next: B07.
