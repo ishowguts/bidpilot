@@ -52,3 +52,21 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   (TAOCP 3.4.1) instead of normal approximations, so moment tests hold for all sizes.
 - Cost: about 3.5 µs to create a stream (BigInt hashing), about 10 s of the full 20-seed experiment. Acceptable
   under the 60 s target; optimize by caching key prefixes if needed.
+
+## ADR-010 · 2026-10-04 · Pacing recovery spends in the same hour; last hour pools every unused rupee
+- Context: §6.4 step 4 says budget an arm cannot use moves to arms with spare capacity at the end of each hour.
+  Moving it into the recipients' remaining budget for later hours made spend lag the traffic curve: a property
+  test found a day with nearly all capacity on an arm with a 0.5% allocation share that spent only 71% of budget.
+- Decision: at the end of each hour, the unused slices of capacity-limited arms are pooled and spent in that same
+  hour on arms that still have available clicks, first in proportion to allocation shares and then in arm order
+  (so rounding leftovers are not lost). Donors are charged in proportion to what they pooled; anything not spent
+  stays with them. In the last hour every unused rupee is pooled. Arms with a zero allocation never receive budget.
+- Consequence: the §10 properties hold (spend ≤ budget always; spend ≥ 0.97 × budget when capacity × CPC ≥
+  1.2 × budget) over 5,000 fast-check cases. The property generator uses category budgets of at least ₹4,000 so
+  that one click (at most ₹60) is a small part of the budget; with tiny budgets integer clicks alone can miss 97%.
+
+## ADR-011 · 2026-10-04 · Policy interface takes the day; CPC is rounded to paise
+- `Policy.allocate(observations, categoryBudgets, rng, day)` adds `day` to the §6.2 interface. The oracle needs it
+  for the drift scenario and greedy needs it to count warm-up days even when no observations exist yet.
+- The simulator rounds each day's noisy CPC to paise, and observations carry spend rounded to paise. Spend then
+  sums exactly in memory and in SQL `numeric`, which the parity test (§10) relies on.

@@ -31,7 +31,8 @@ export function armDay(
   const cpcFactor = lognormal(rng, 0, CPC_NOISE_SIGMA);
   const rateFactor = lognormal(rng, 0, APPLY_RATE_NOISE_SIGMA);
   return {
-    cpc: truth.cpc * cpcFactor,
+    // Rounded to paise so spend sums are exact in both the in-memory path and SQL (numeric) rollups.
+    cpc: Math.round(truth.cpc * cpcFactor * 100) / 100,
     applyRate: Math.min(truth.applyRate * rateFactor, MAX_APPLY_RATE),
     capacity: truth.capacity,
   };
