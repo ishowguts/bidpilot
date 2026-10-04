@@ -7,25 +7,25 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B06 Scenarios + simulator (rebuild)
-- Doing now: starting B06. B05 is done: `packages/core/src/rng.ts` rewritten on pure-rand xoroshiro128+ with streams derived by splitmix64
-  hashing of the full tuple; environment stream key (seed, day, hour, category, publisher), policy stream key
-  (seed, policy, day). Samplers: uniform, normal, lognormal, gamma (Marsaglia-Tsang), beta, poisson, binomial.
-- Next step: B06. Review `scenarios.ts` (kept from before; it does not use the RNG), write `simulator.ts`
-  (hour-level events, §5.1 noise, traffic curve) and tests (observed CPA converges to true CPA ± 5%; drift on day 15).
-- Done in B05: moment tests over 100k draws for every sampler, determinism, collision and correlation tests.
-  The old simulator, pacing, posterior, policies and runCampaign files were deleted; B06-B09 rebuild them.
-- Files in flight: packages/core/src/rng.ts, packages/core/src/rng.test.ts
+- Task: B07 Pacing + equal policy + runCampaign (rebuild)
+- Doing now: adding fast-check as a dev dependency; writing `policies/types.ts` (Policy interface,
+  Observation, Allocation), `policies/equal.ts`, `pacing.ts` (§6.4) and `runCampaign.ts` (day loop).
+- Next step: fast-check pacing properties (spend <= budget always; spend >= 0.97 × budget when capacity × CPC
+  >= 1.2 × budget) and an equal-policy 30-day determinism test; then B08.
+- Files in flight: packages/core/src/pacing.ts, policies/types.ts, policies/equal.ts, runCampaign.ts and tests
 - Open problems / gotchas:
-  - Downstream core modules (simulator, pacing, policies, runCampaign) still use the old RNG class until B06-B09
-    are rebuilt; they may be rewritten wholesale.
-  - B03 review: `GET /api/publishers` is a stub returning `[]`, pino-http is a dependency but not wired, and the
-    API test hardcodes the test DB URL instead of `DATABASE_URL_TEST`. Fix these in B11 (API work) and record it.
+  - Days are 1-based everywhere in core (drift starts on day 15 = `DRIFT_DAY`).
+  - Simulator API: `armDay(seed, scenario, day, category, publisher)` gives the noisy daily parameters;
+    `hourTraffic(...)` gives available clicks and an `applies(clicks)` draw (order fixed for common random numbers).
+  - CI status cannot be checked from this machine (no `gh` CLI, private repo). Owner should glance at Actions.
+  - B03 review: `GET /api/publishers` is a stub returning `[]`, pino-http is not wired, and the API test hardcodes
+    the test DB URL instead of `DATABASE_URL_TEST`. Fix in B11.
   - `.env` exists and must never be printed or overwritten. Never name any tool or assistant in code, comments or docs.
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Log
 
+- 2026-10-04 · B06 done (f5a682e): scenarios, hour-level simulator, CPA convergence and drift tests. Next: B07.
 - 2026-10-04 · B05 done (38d4057): pure-rand streams with hashed keys, exact samplers, moment tests. Next: B06.
 - 2026-10-04 · recovered B11: uncommitted campaign routes lacked advance, baseline, shared schemas and tests; discarded. Removed duplicate apps/experiments. STATE B05-B11 reset to todo.
 - 2026-10-04 · Taking over after owner audit. Rebuilding B05-B11 strictly to ARCHITECTURE; ADRs for deviations.
