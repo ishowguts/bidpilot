@@ -8,10 +8,10 @@ continue from this file alone.
 
 - Status: IN PROGRESS
 - Task: B11 Campaign API (reopened: CI red on 0c832b0 and f7cc685)
-- Doing now: fix committed (types pinned, ADR-019, scripts/ci-local.sh); running ci-local on HEAD, then push.
-- Next step: find the root cause (lockfile versus node_modules mismatch around pino-http/express types), fix, add a
-  local script that reproduces CI from a fresh clone, push, wait for the owner to confirm CI is green. Then B12.
-- Files in flight: apps/api/src/app.ts, apps/api/package.json, pnpm-lock.yaml
+- Doing now: B11 CI fix pushed (a5e556a, ci-local green; ci-local red on f7cc685 as on GitHub). B11 stays in
+  progress until the owner confirms CI on GitHub. Meanwhile starting B12.
+- Next step: B12 shared stats schemas (packages/shared/src/stats.ts), then service, routes, fixture test.
+- Files in flight: packages/shared/src/stats.ts, apps/api/src/services/stats.ts, apps/api/src/routes/stats.ts
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
   - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
@@ -24,6 +24,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · B11 reopened: CI Typecheck red (TS2769). Fixed in a5e556a (@types/express 4, single @types/node 20, ADR-019); scripts/ci-local.sh reproduces CI. Awaiting owner confirmation.
 - 2026-10-04 · B11 done (6be34ac): campaign API with paired baseline, per-day transactions, crash-safe re-run; B02/B03 review fixes (migration 0002, publishers, pino-http, test DB). Next: B12.
 - 2026-10-04 · B10 done (5293224): experiments CLI, 3 scenarios, `--ablation`; default 27.9 s, ablation 60.5 s. Next: B11.
 - 2026-10-04 · B08 done (13eace5) and B09 done (99825a7): criteria restated per ADR-015 (owner approved), all tests pass. CI green on c6ea8c1 (owner checked). Next: B10.
