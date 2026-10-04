@@ -233,3 +233,14 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   mistake (a quote, a trailing newline) would have printed its password into the deploy log.
 - `databaseUrl()` in `packages/db` checks the value (set, no whitespace, parses as a URL, `postgres:`/`postgresql:`
   scheme, has a host) in `createClient`, `migrate` and `seed`, and its errors name the problem but never the value.
+
+## ADR-025 · 2026-10-05 · Daily summary details (§12)
+- Dependency: `@google/genai` (the client named in §3), used only in `apps/api/src/llm.ts` behind a two-member
+  `LlmClient` interface, so tests use a fake model. `GEMINI_API_KEY` and `GEMINI_MODEL` are optional; without both,
+  every summary is the template.
+- The response adds `date`, `source` and `model` to §8's `{ day, text, numbers }`, so the client can tell model text
+  from the fallback. A day not simulated yet is a 404.
+- One call, no retry: a retry doubles cost and latency against a free-tier limit of 5 requests a minute, and the
+  template is a correct answer. Only grounded model text is cached.
+- The prompt explains each field in plain words and forbids field names, JSON and null in the text. The first prompt
+  produced grounded but awkward text ("a shareChangePts of 8.9"); measured after the change, below.

@@ -31,6 +31,9 @@ const envSchema = z.object({
       message: 'CORS_ORIGINS has no valid origin, for example https://your-app.vercel.app',
     }),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+  // Optional: without both, daily summaries use the template (ARCHITECTURE §12).
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  GEMINI_MODEL: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

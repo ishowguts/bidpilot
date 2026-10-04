@@ -47,6 +47,7 @@ Only measured values, each with the command that produced it and the commit.
 | Experiment runtime with `--ablation` (adds 2 Thompson floors) | 60.0 s (69.6 s at add6965, 60.5 s at b38fa01) | `pnpm exp --seeds 20 --days 30 --scenario all --ablation` | e903192 |
 | Pacing: days spending < 97% of budget when capacity value ≥ 1.2 × budget | 0 of 34,008 random days, min 98.8% (before ADR-023: 2, min 96.6%) | fast-check sample of the property's arbitrary, seed 42 (ADR-023) | e903192 |
 
+| Daily summary, live model (gemini-3.8-flash, thinking off) | 4 of 4 answered calls grounded with the final prompt (7 of 7 including the first prompt); 1.5-5.6 s per call; the other calls got 429 (free tier, 5 requests/min) or 503 (overloaded) and fell back to the template | local script calling `modelText` on demo days 1-30 of the seeded demo campaign | B19 commit |
 Runtimes measured on the owner's Mac (Node 25, single process); they vary by about 10% between runs. Committed
 `experiments/results/` come from the `--ablation` run. Results were regenerated at e903192 after the pacing headroom
 fix (ADR-023); every CPA moved within its confidence interval.

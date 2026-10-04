@@ -317,7 +317,7 @@ Error shape: `{ "error": { "code", "message", "details"? }, "requestId" }`, code
 | `POST /events` | `{ events: Event[1..1000] }`, `Event = { idempotencyKey, campaignId, jobId, publisherId, type, cost, ts }` | `{ accepted, duplicates }` |
 | `GET /campaigns/:id/stats/daily` | — | `[{ day, date, publisherId, clicks, applies, spend, cpa, cpa7d, spendShare, budget, pBest }]`, one row per day and publisher summed over categories; `pBest` is the mean over categories with a budget (ADR-020) |
 | `GET /campaigns/:id/stats/summary` | — | `{ days, spend, budget, clicks, applies, cpa, pacingRatio, overdelivery, baseline?: { applies, cpa }, deltaCpaPct? }`; `budget` = daily budget × days advanced, `overdelivery` = ₹ above the daily budget summed over days (ADR-020) |
-| `GET /campaigns/:id/summary/:day` | — (stretch) | `{ day, text, numbers }` |
+| `GET /campaigns/:id/summary/:day` | — (stretch) | `{ day, date, text, numbers, source: 'model' \| 'template', model }`; 404 for a day not simulated yet (ADR-025) |
 | `GET /experiments/latest` | — | contents of `experiments/results/results.json`, validated; 404 if absent |
 
 `Campaign` = `{ id, name, dailyBudget, days, startDate, targetCpa, policy, scenario, seed, baselineOf, baselineId,
@@ -384,6 +384,12 @@ Ports differ from TalentLens (5433 / 4100 / 3100) so both projects can run at th
 - Output JSON `{ text: string (≤ 80 words) }`, zod-validated.
 - **Grounding check:** every number in `text` must appear in the input (after rounding to the precision sent). If any
   number does not, the summary is rejected and replaced with a template sentence. The model cannot invent figures.
+- Implementation (ADR-025): numbers are whole rupees, applies, and per publisher the budget share (percent, one
+  decimal) and its change since yesterday (points, one decimal). One call with JSON mode, temperature 0 and thinking
+  off (`thinkingBudget: 0`), 15 s timeout. A number in the text passes if it equals an input value or its absolute
+  value ("fell 3.2 points"); date parts pass. Invalid JSON, more than 80 words, a model error or an ungrounded
+  number all give the template sentence, which is built from the same numbers. Grounded model text is stored in
+  `daily_summaries` and served from there; the template is never stored, so a later request can still get model text.
 
 ## 13. Deployment
 

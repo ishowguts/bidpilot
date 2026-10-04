@@ -10,15 +10,19 @@ import { healthRouter } from './routes/health.js';
 import { eventsRouter } from './routes/events.js';
 import { campaignsRouter } from './routes/campaigns.js';
 import { statsRouter } from './routes/stats.js';
+import { summaryRouter } from './routes/summary.js';
+import type { LlmClient } from './llm.js';
 
 export interface AppDeps {
   env: Env;
   db: Database;
   /** Location of `experiments/results/results.json`; tests point it elsewhere. */
   resultsPath?: URL | string;
+  /** Writes the daily summaries; null or absent means the template is used (ARCHITECTURE §12). */
+  llm?: LlmClient | null;
 }
 
-export function createApp({ env, db, resultsPath }: AppDeps): Express {
+export function createApp({ env, db, resultsPath, llm = null }: AppDeps): Express {
   const app = express();
 
   app.use(
@@ -49,6 +53,7 @@ export function createApp({ env, db, resultsPath }: AppDeps): Express {
   app.use('/api', eventsRouter(db));
   app.use('/api', campaignsRouter(db));
   app.use('/api', statsRouter(db, resultsPath));
+  app.use('/api', summaryRouter(db, llm));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
