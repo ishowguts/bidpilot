@@ -23,7 +23,7 @@ describe('runCampaign with the equal policy', () => {
     for (const day of runCampaign(config, createEqualPolicy())) {
       expect(day.spend).toBeLessThanOrEqual(day.budget + 1e-6);
       expect(day.spend / day.budget).toBeGreaterThanOrEqual(0.97);
-      for (const a of day.allocations) expect(a.budget).toBeCloseTo(20_000 / 4 / 6, 9);
+      for (const a of day.allocations) expect(a.budget).toBe(833.33);
     }
   });
 

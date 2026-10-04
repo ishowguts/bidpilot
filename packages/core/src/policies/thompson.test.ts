@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createThompsonPolicy, probabilityBest, sharesToBudgets } from './thompson.js';
-import { DEFAULT_JOBS_PER_CATEGORY, categoryBudgets, runCampaign, type CampaignConfig, type DayResult } from '../runCampaign.js';
-import { policyStream, stream } from '../rng.js';
+import { DEFAULT_JOBS_PER_CATEGORY, allocateDay, runCampaign, type CampaignConfig, type DayResult } from '../runCampaign.js';
+import { stream } from '../rng.js';
 import { CATEGORIES, DRIFT_DAY, bestPublisher, type Category, type ScenarioName } from '../scenarios.js';
 
 const SEEDS = Array.from({ length: 20 }, (_, i) => i + 1);
@@ -62,7 +62,7 @@ describe('Thompson policy', () => {
     const cfg = config(4, 'drift', 18);
     const days = runCampaign(cfg, createThompsonPolicy());
     const history = days.slice(0, 17).flatMap((d) => d.observations);
-    const fresh = createThompsonPolicy().allocate(history, categoryBudgets(cfg), policyStream(4, 'thompson', 18), 18);
+    const fresh = allocateDay(cfg, createThompsonPolicy(), 18, history);
     expect(fresh).toEqual(days[17]!.allocations);
   });
 

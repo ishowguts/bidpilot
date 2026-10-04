@@ -83,14 +83,20 @@ export function simulateDay(config: CampaignConfig, day: number, allocations: re
   };
 }
 
-/** Asks the policy for one day's allocations, using the policy stream for (seed, policy, day). */
+/**
+ * Asks the policy for one day's allocations, using the policy stream for (seed, policy, day). Budgets are rounded
+ * down to paise, the precision the live path stores (`numeric(12,2)`), so both paths pace the same amounts and the
+ * category total never grows.
+ */
 export function allocateDay(
   config: CampaignConfig,
   policy: Policy,
   day: number,
   history: readonly Observation[],
 ): Allocation[] {
-  return policy.allocate(history, categoryBudgets(config), policyStream(config.seed, policy.name, day), day);
+  return policy
+    .allocate(history, categoryBudgets(config), policyStream(config.seed, policy.name, day), day)
+    .map((a) => ({ ...a, budget: Math.floor(a.budget * 100 + 1e-6) / 100 }));
 }
 
 /** Runs a whole campaign in memory. */
