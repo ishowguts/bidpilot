@@ -7,11 +7,11 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B15 Dashboard (B11 still awaits the owner's CI confirmation for a5e556a)
-- Doing now: `/campaigns/[id]` client page: KPI tiles from /stats/summary, four Recharts charts (§9) from
-  /stats/daily of the campaign and its baseline, "Advance 1 day" / "Advance to end" controls, loading/error/empty.
-- Next step: chart data shaping in a pure, unit-tested module (`src/lib/charts.ts`), then the page, then build.
-- Files in flight: apps/web/src/app/campaigns/[id]/page.tsx, apps/web/src/lib/charts.ts, apps/web/src/components/*
+- Task: B16 Experiments page (B11 still awaits the owner's CI confirmation for a5e556a)
+- Doing now: `/experiments`: results table (main rows per scenario, ablation rows separate) and a CPA bar chart with
+  95% CI whiskers per policy × scenario from /experiments/latest.
+- Next step: shape rows in `src/lib/experiments.ts` (tested), page, headless check, ci-local.
+- Files in flight: apps/web/src/app/experiments/page.tsx, apps/web/src/lib/experiments.ts
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
   - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
@@ -21,12 +21,14 @@ continue from this file alone.
     (fresh clone, Node 20, frozen install), which matches CI exactly (ADR-019).
   - Port 4100 is taken by another local project on this machine: run the API with `PORT=4101` and the web app
     with `NEXT_PUBLIC_API_URL=http://localhost:4101` for manual checks. The browser extension was not connected,
-    so B14 was smoke-tested over HTTP (page render, CORS preflight, create, list), not visually.
+    so pages are checked with headless Chrome: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    --headless=new --virtual-time-budget=15000 --screenshot=out.png URL` (wrap with `perl -e 'alarm 45; exec @ARGV'`).
   - `.env` exists and must never be printed or overwritten. Never name any tool or assistant in code, comments or docs.
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Log
 
+- 2026-10-05 · B15 done (5336111): dashboard tiles, four charts, advance controls, loading/error/empty states (checked in headless Chrome). ci-local green.
 - 2026-10-05 · B14 done (4def352): web scaffold, typed zod client, list + create form; web joins typecheck/lint/test and CI builds it (ADR-021). ci-local green.
 - 2026-10-05 · B13 done (9964f8b): live allocations equal runCampaign for 5 days (thompson and greedy, drift, uneven jobs). ci-local green.
 - 2026-10-05 · B12 done (0df99f6): stats daily/summary with window SQL, experiments/latest, hand-computed fixture; ADR-020. ci-local green.
