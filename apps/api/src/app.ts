@@ -9,13 +9,16 @@ import { errorHandler, notFoundHandler } from './middleware/errors.js';
 import { healthRouter } from './routes/health.js';
 import { eventsRouter } from './routes/events.js';
 import { campaignsRouter } from './routes/campaigns.js';
+import { statsRouter } from './routes/stats.js';
 
 export interface AppDeps {
   env: Env;
   db: Database;
+  /** Location of `experiments/results/results.json`; tests point it elsewhere. */
+  resultsPath?: URL | string;
 }
 
-export function createApp({ env, db }: AppDeps): Express {
+export function createApp({ env, db, resultsPath }: AppDeps): Express {
   const app = express();
 
   app.use(
@@ -38,6 +41,7 @@ export function createApp({ env, db }: AppDeps): Express {
   app.use('/api', healthRouter(db));
   app.use('/api', eventsRouter(db));
   app.use('/api', campaignsRouter(db));
+  app.use('/api', statsRouter(db, resultsPath));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

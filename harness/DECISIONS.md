@@ -166,3 +166,18 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
 - `scripts/ci-local.sh [ref]` repeats `ci.yml` on a fresh clone of a committed ref: Node 20, frozen install, fresh
   databases (`bidpilot_ci`, `bidpilot_ci_test`), migrate and seed, guard, lint, typecheck, test. A task is marked
   done only after it passes on the task's commit.
+
+## ADR-020 · 2026-10-05 · Stats API details beyond §7 and §8
+- `/stats/daily` rows are per day and publisher, summed over categories, as §7's query groups them. Each row also
+  carries the calendar `date` next to the 1-based `day`, like the advance response. `budget` is the allocation summed
+  over categories; `pBest` is the mean over categories where the publisher has a budget (null for policies without
+  it), because P(best) is defined per category and a budget-0 row says nothing about the arm.
+- Allocations and rollups are joined with a full join on (day, publisher): a funded day without traffic shows as
+  zeros and events ingested without an allocation are still counted.
+- The 7-day window is `RANGE BETWEEN interval '6 days' PRECEDING` on the date rather than `ROWS 6 PRECEDING`, so it
+  covers seven calendar days even when a publisher has no row on some day. §7 is updated to match.
+- `/stats/summary`: `budget` = daily budget × days advanced; `pacingRatio` = spend / budget (null before day 1);
+  `overdelivery` = ₹ spent above the daily budget, summed over days; `days` and `clicks` are added for the tiles.
+  `baseline` and `deltaCpaPct` = (cpa / baseline cpa − 1) × 100 are present only on a campaign with a paired
+  baseline; `deltaCpaPct` is null when either side has no applies.
+- `/experiments/latest` validates the file with the shared schema: 404 when it does not exist, 500 when malformed.

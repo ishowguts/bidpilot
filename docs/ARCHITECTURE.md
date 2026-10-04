@@ -296,7 +296,7 @@ SELECT day, publisher_id,
        sum(applies) OVER (ORDER BY day ROWS UNBOUNDED PRECEDING)     AS cum_applies_all
 FROM (SELECT day, publisher_id, sum(spend) spend, sum(applies) applies, sum(clicks) clicks
       FROM daily_stats WHERE campaign_id = $1 GROUP BY day, publisher_id) d
-WINDOW w7 AS (PARTITION BY publisher_id ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)
+WINDOW w7 AS (PARTITION BY publisher_id ORDER BY day RANGE BETWEEN interval '6 days' PRECEDING AND CURRENT ROW)
 ORDER BY day, publisher_id;
 ```
 
@@ -314,10 +314,10 @@ Error shape: `{ "error": { "code", "message", "details"? }, "requestId" }`, code
 | `GET /campaigns/:id` | — | `Campaign` |
 | `POST /campaigns/:id/advance` | `{ days: 1–30 }` | `{ currentDay, days: [{ day, date, budget, spend, clicks, applies, cpa \| null }] }`; advances the paired baseline too and stops at the last day. 409 if the campaign is finished or is itself a baseline |
 | `POST /events` | `{ events: Event[1..1000] }`, `Event = { idempotencyKey, campaignId, jobId, publisherId, type, cost, ts }` | `{ accepted, duplicates }` |
-| `GET /campaigns/:id/stats/daily` | — | `[{ day, publisherId, clicks, applies, spend, cpa, cpa7d, spendShare, budget, pBest }]` |
-| `GET /campaigns/:id/stats/summary` | — | `{ spend, budget, applies, cpa, pacingRatio, overdelivery, baseline?: { applies, cpa }, deltaCpaPct? }` |
+| `GET /campaigns/:id/stats/daily` | — | `[{ day, date, publisherId, clicks, applies, spend, cpa, cpa7d, spendShare, budget, pBest }]`, one row per day and publisher summed over categories; `pBest` is the mean over categories with a budget (ADR-020) |
+| `GET /campaigns/:id/stats/summary` | — | `{ days, spend, budget, clicks, applies, cpa, pacingRatio, overdelivery, baseline?: { applies, cpa }, deltaCpaPct? }`; `budget` = daily budget × days advanced, `overdelivery` = ₹ above the daily budget summed over days (ADR-020) |
 | `GET /campaigns/:id/summary/:day` | — (stretch) | `{ day, text, numbers }` |
-| `GET /experiments/latest` | — | contents of `experiments/results/results.json` |
+| `GET /experiments/latest` | — | contents of `experiments/results/results.json`, validated; 404 if absent |
 
 `Campaign` = `{ id, name, dailyBudget, days, startDate, targetCpa, policy, scenario, seed, baselineOf, baselineId,
 jobsPerCategory, currentDay, progress (0–1), finished, createdAt }`; `baselineOf` is set on a baseline, `baselineId` on
