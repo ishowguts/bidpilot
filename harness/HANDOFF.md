@@ -7,14 +7,12 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B12 Stats API
-- Doing now: planning. `services/stats.ts` with the §7 window-function query for `/campaigns/:id/stats/daily`
-  (per day and publisher: clicks, applies, spend, cpa, cpa7d, spendShare, budget, pBest), `/stats/summary`
-  (spend, budget, applies, cpa, pacingRatio, overdelivery, baseline { applies, cpa }, deltaCpaPct), and
-  `/experiments/latest` (reads experiments/results/results.json, zod-validated).
-- Next step: shared response schemas, then the service and routes, then a hand-computed fixture test
-  (insert known events and allocations directly, compare every field).
-- Files in flight: apps/api/src/services/stats.ts, routes/stats.ts, packages/shared/src/stats.ts
+- Task: B11 Campaign API (reopened: CI red on 0c832b0 and f7cc685)
+- Doing now: reproducing CI in a fresh clone (`pnpm install --frozen-lockfile`, then `pnpm typecheck`). CI fails with
+  `apps/api/src/app.ts(34,11): error TS2769: No overload matches this call`; local passes.
+- Next step: find the root cause (lockfile versus node_modules mismatch around pino-http/express types), fix, add a
+  local script that reproduces CI from a fresh clone, push, wait for the owner to confirm CI is green. Then B12.
+- Files in flight: apps/api/src/app.ts, apps/api/package.json, pnpm-lock.yaml
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
   - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
