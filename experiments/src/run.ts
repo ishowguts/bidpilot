@@ -22,7 +22,10 @@ const argsSchema = z.object({
 function gitCommit(): string {
   try {
     const hash = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
-    const dirty = execFileSync('git', ['status', '--porcelain', '--', '.', '../packages/core'], { encoding: 'utf8' }).trim();
+    // Source changes in core or the experiments package make the commit hash a lie; the results files do not.
+    const dirty = execFileSync('git', ['status', '--porcelain', '--', '.', '../packages/core', ':!results'], {
+      encoding: 'utf8',
+    }).trim();
     return dirty ? `${hash}-dirty` : hash;
   } catch {
     return 'unknown';
