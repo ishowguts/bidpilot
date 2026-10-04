@@ -25,6 +25,8 @@ export interface ArmHourResult {
 
 export interface ArmDayResult {
   publisherId: PublisherId;
+  /** ₹ allocated to the arm at the start of the day. */
+  budget: number;
   clicks: number;
   applies: number;
   spend: number;
@@ -124,6 +126,7 @@ export function paceCategory(
     spend: daySpend,
     arms: arms.map((a, i) => ({
       publisherId: a.publisherId,
+      budget: a.budget,
       clicks: dayClicks[i]!,
       applies: dayApplies[i]!,
       spend: daySpendByArm[i]!,

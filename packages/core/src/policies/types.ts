@@ -13,6 +13,8 @@ export interface Observation {
   applies: number;
   /** ₹, rounded to paise. */
   spend: number;
+  /** ₹ the policy allocated to this arm that day (its own decision, not ground truth). */
+  budget: number;
 }
 
 /** One arm's budget for a day plus the policy's diagnostics (persisted with each allocation row, §6.2 step 5). */

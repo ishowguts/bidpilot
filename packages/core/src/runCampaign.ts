@@ -69,6 +69,7 @@ export function simulateDay(config: CampaignConfig, day: number, allocations: re
       clicks: a.clicks,
       applies: a.applies,
       spend: roundPaise(a.spend),
+      budget: a.budget,
     })),
   );
   return {
