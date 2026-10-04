@@ -7,11 +7,10 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B16 Experiments page (B11 still awaits the owner's CI confirmation for a5e556a)
-- Doing now: `/experiments`: results table (main rows per scenario, ablation rows separate) and a CPA bar chart with
-  95% CI whiskers per policy × scenario from /experiments/latest.
-- Next step: shape rows in `src/lib/experiments.ts` (tested), page, headless check, ci-local.
-- Files in flight: apps/web/src/app/experiments/page.tsx, apps/web/src/lib/experiments.ts
+- Task: B17 Test pass (B11 still awaits the owner's CI confirmation for a5e556a)
+- Doing now: auditing every endpoint in §8 for one happy-path and one failure-path test; adding the missing ones.
+- Next step: list endpoint × test matrix in this file, fill gaps in apps/api/src/*.test.ts, ci-local, mark done.
+- Files in flight: apps/api/src/app.test.ts
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
   - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
@@ -28,6 +27,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · B16 done (96d48d7): experiments page, per-scenario tables incl. ablation rows, CPA bars with 95% CI whiskers. ci-local green.
 - 2026-10-05 · B15 done (5336111): dashboard tiles, four charts, advance controls, loading/error/empty states (checked in headless Chrome). ci-local green.
 - 2026-10-05 · B14 done (4def352): web scaffold, typed zod client, list + create form; web joins typecheck/lint/test and CI builds it (ADR-021). ci-local green.
 - 2026-10-05 · B13 done (9964f8b): live allocations equal runCampaign for 5 days (thompson and greedy, drift, uneven jobs). ci-local green.
