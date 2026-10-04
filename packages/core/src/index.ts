@@ -7,3 +7,6 @@ export * from './runCampaign.js';
 export * from './policies/types.js';
 export * from './policies/equal.js';
 export * from './policies/thompson.js';
+export * from './policies/greedy.js';
+export * from './policies/oracle.js';
+export * from './policies/create.js';

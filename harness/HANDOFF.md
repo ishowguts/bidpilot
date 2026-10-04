@@ -8,7 +8,17 @@ continue from this file alone.
 
 - Status: IN PROGRESS
 - Task: B08 Posterior + Thompson policy (rebuild)
-- Doing now: BLOCKED on an owner decision about the §10 convergence and drift criteria (measured below).
+- Doing now: BLOCKED on owner decision #2. Owner decision #1 (2026-10-04): restate the §10 pBest/drift criteria
+  from measurement (ADR), and add outcome criteria over 20 seeds x 30 days: Thompson CPA beats equal on >= 18/20
+  seeds in both scenarios; Thompson regret vs oracle lower than equal's and greedy's; in drift Thompson CPA beats
+  greedy. "Measure first; if any fail, stop and show the numbers before changing anything."
+  Greedy and oracle are written (`policies/greedy.ts`, `policies/oracle.ts`, `policies/create.ts`) to measure this.
+  Result (mean over 20 seeds): stationary CPA thompson 392.1, equal 478.2, greedy 377.3, oracle 336.3; regret
+  (applies) 249 / 524 / 217 / 0. Drift CPA 444.7 / 513.7 / 426.5 / 361.0; regret 265 / 446 / 241 / 0.
+  Thompson beats equal 20/20 in both; beats greedy on CPA 5/20 (stationary), 4/20 (drift). FAILS: regret vs
+  greedy, and drift CPA vs greedy. Oracle CPA <= every policy on every seed (B09 criterion holds).
+  Spend share stationary: thompson A 9.3 B 24.2 C 37.7 D 6.6 E 10.8 F 11.4; greedy A 3.2 B 38.1 C 36.7 D 2.2;
+  oracle B 46.2 C 53.8. Nothing was changed after measuring; waiting for the owner.
   Code is written: `posterior.ts` as an incremental fold (state per arm; each elapsed day applies γ exactly once, in
   day order, then adds that day's counts) and `policies/thompson.ts` (§6.2: 2,000 draws, pBest, 3% floor,
   capacity cap with redistribution by pBest).
