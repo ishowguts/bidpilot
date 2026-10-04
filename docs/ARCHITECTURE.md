@@ -60,14 +60,14 @@ Two execution paths share the same core:
 | Language | TypeScript 5, `strict`, ESM, Node.js 20 LTS |
 | Monorepo | pnpm workspaces |
 | Backend | Express 4, zod, pino + pino-http, helmet, cors |
-| Database | PostgreSQL 16 (Docker locally, Neon in prod) |
+| Database | PostgreSQL 16 (Docker locally, Supabase in prod) |
 | ORM / migrations | Drizzle ORM + drizzle-kit; raw SQL migration for the materialized view |
 | Frontend | Next.js 14 App Router, Tailwind CSS, Recharts |
 | RNG | seeded `pure-rand` (xoroshiro128+), split streams (§6.1) |
 | Tests | Vitest, Supertest, fast-check (property tests for pacing) |
 | LLM (stretch) | Gemini via `@google/genai`, JSON mode, zod-validated, numbers-only grounding check |
 | CI | GitHub Actions: guard, lint, typecheck, test |
-| Deploy | Vercel (web), Render (api), Neon (Postgres) |
+| Deploy | Vercel (web), Render (api, Singapore), Supabase (Postgres) |
 
 ## 4. Repository layout
 
@@ -366,6 +366,7 @@ whiskers per policy and scenario.
 | --- | --- | --- |
 | `DATABASE_URL` | api | `postgres://postgres:postgres@localhost:5433/bidpilot` |
 | `DATABASE_URL_TEST` | api tests | `postgres://postgres:postgres@localhost:5433/bidpilot_test` |
+| `DATABASE_URL_PROD` | `scripts/seed-prod.sh` only (workstation) | Supabase pooler URL (secret) |
 | `PORT` | api | `4100` |
 | `CORS_ORIGINS` | api | `http://localhost:3100` |
 | `LOG_LEVEL` | api | `info` |
@@ -385,17 +386,22 @@ Ports differ from TalentLens (5433 / 4100 / 3100) so both projects can run at th
 
 ## 13. Deployment
 
-Neon (Postgres), Render (api), Vercel (web), same pattern as TalentLens. Seed a demo campaign + paired baseline
+Supabase (Postgres), Render (api, region Singapore), Vercel (web), same pattern as TalentLens. Seed a demo campaign + paired baseline
 advanced to day 30 on deploy so the dashboard is never empty.
 
 - **API (Render, `render.yaml`):** build `pnpm install --frozen-lockfile && pnpm build`; start runs
   `pnpm --filter db migrate`, `pnpm --filter db seed`, `node apps/api/dist/seedDemo.js`, then the server. All three
-  setup steps are idempotent, so every deploy and restart is safe. Env: `DATABASE_URL` (Neon pooled URL),
-  `CORS_ORIGINS` (the Vercel URL), `LOG_LEVEL`. Health check: `/api/health`.
+  setup steps are idempotent, so every deploy and restart is safe. Env: `DATABASE_URL` (Supabase pooler URL),
+  `CORS_ORIGINS` (the Vercel origin; normalized, so a trailing slash, quotes or case do not matter), `LOG_LEVEL`. Health check: `/api/health`.
 - **Demo seed (`apps/api/src/seedDemo.ts`):** "Demo: emerging publisher", Thompson, `emergence`, seed 1, ₹20,000/day,
   30 days from 2026-10-01, with its equal-split baseline; found by name and advanced only by the days left.
 - **Web (Vercel, `apps/web/vercel.json`):** root directory `apps/web`; build `pnpm --filter @bidpilot/shared build &&
   pnpm --filter @bidpilot/web build`; env `NEXT_PUBLIC_API_URL` = the Render URL.
+- **Connections:** postgres-js runs with `prepare: false` everywhere, because the Supabase transaction pooler cannot
+  keep prepared statements across transactions. Everything else (transactions, `FOR UPDATE`,
+  `REFRESH MATERIALIZED VIEW CONCURRENTLY`) is transaction-scoped and works through it.
+- **Seeding production from a workstation:** `sh scripts/seed-prod.sh` reads `DATABASE_URL_PROD` from `.env` (never
+  printed), runs migrate, the publisher seed and the demo seed, then prints row counts.
 
 ## 14. How real traffic would differ (keep honest in the README)
 

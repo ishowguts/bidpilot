@@ -7,7 +7,7 @@ import type { Env } from '../env.js';
 export const testEnv: Env = {
   DATABASE_URL: process.env.DATABASE_URL_TEST ?? 'postgres://postgres:postgres@localhost:5433/bidpilot_test',
   PORT: 4100,
-  CORS_ORIGINS: 'http://localhost:3100',
+  CORS_ORIGINS: ['http://localhost:3100'],
   LOG_LEVEL: 'silent',
 };
 

@@ -1,10 +1,13 @@
-# Render blueprint for the API (ARCHITECTURE §13). Postgres is Neon: set DATABASE_URL to its pooled connection
-# string. The start command migrates, seeds publishers and the demo campaign (all idempotent), then serves.
+# Render blueprint for the API (ARCHITECTURE §13). Postgres is Supabase: set DATABASE_URL to its pooler connection
+# string. The web app is on Vercel; only the API runs here. Singapore is the Render region closest to the database
+# (Oregon, the default, would add a Pacific round trip to every query).
+# The start command migrates, seeds publishers and the demo campaign (all idempotent), then serves.
 services:
   - type: web
     name: bidpilot-api
     runtime: node
     plan: free
+    region: singapore
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
     startCommand: >-
       pnpm --filter db migrate && pnpm --filter db seed && node apps/api/dist/seedDemo.js &&
@@ -13,6 +16,7 @@ services:
     envVars:
       - key: NODE_VERSION
         value: '20'
+      # Set in the Render dashboard, never in this file.
       - key: DATABASE_URL
         sync: false
       - key: CORS_ORIGINS

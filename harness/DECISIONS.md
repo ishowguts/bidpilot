@@ -194,6 +194,13 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   `scripts/ci-local.sh`.
 
 ## ADR-022 · 2026-10-05 · Deploy setup
+- Production Postgres is Supabase, not Neon as first planned (owner decision); the API runs on Render in Singapore,
+  the region closest to the database, and the web app on Vercel. B18's task text still says Neon; this ADR
+  supersedes it.
+- postgres-js connects with `prepare: false` so the Supabase transaction pooler works.
+- `CORS_ORIGINS` entries and request origins are both normalized (quotes, whitespace, trailing slash, path, case,
+  missing scheme) before comparison, as in TalentLens: a trailing slash pasted into a dashboard must not block
+  every browser.
 - Migrations, the publisher seed and the demo seed run in the API's start command rather than a separate release
   step, because the free Render plan has no pre-deploy hook. Each is idempotent, so restarts repeat them harmlessly.
 - The demo is the `emergence` scenario because it is the case exploration exists for (ADR-013): its budget-share

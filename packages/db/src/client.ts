@@ -3,7 +3,8 @@ import postgres from 'postgres';
 import * as schema from './schema.js';
 
 export function createClient(connectionString: string) {
-  const sql = postgres(connectionString);
+  // No prepared statements: the Supabase transaction pooler (PgBouncer) cannot keep them across transactions.
+  const sql = postgres(connectionString, { prepare: false });
   return drizzle(sql, { schema });
 }
 

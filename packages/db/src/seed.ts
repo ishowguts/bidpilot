@@ -12,7 +12,7 @@ const PUBLISHERS = [
 
 async function seed() {
   const url = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/bidpilot';
-  const sql = postgres(url);
+  const sql = postgres(url, { prepare: false });
 
   // Upsert publishers so running seed twice is safe and a wrong name or id is corrected.
   for (const pub of PUBLISHERS) {

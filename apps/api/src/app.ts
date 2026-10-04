@@ -4,7 +4,7 @@ import cors from 'cors';
 import { pinoHttp } from 'pino-http';
 import { randomUUID } from 'node:crypto';
 import type { Database } from '@bidpilot/db';
-import type { Env } from './env.js';
+import { normalizeOrigin, type Env } from './env.js';
 import { errorHandler, notFoundHandler } from './middleware/errors.js';
 import { healthRouter } from './routes/health.js';
 import { eventsRouter } from './routes/events.js';
@@ -35,7 +35,14 @@ export function createApp({ env, db, resultsPath }: AppDeps): Express {
     }),
   );
   app.use(helmet());
-  app.use(cors({ origin: env.CORS_ORIGINS.split(',').map((o) => o.trim()) }));
+  const allowedOrigins = new Set(env.CORS_ORIGINS);
+  app.use(
+    cors({
+      // Compared after normalization on both sides, so a trailing slash or case difference cannot block browsers.
+      // Requests without an Origin header (server to server, curl) are not subject to CORS.
+      origin: (origin, callback) => callback(null, !origin || allowedOrigins.has(normalizeOrigin(origin))),
+    }),
+  );
   app.use(express.json({ limit: '1mb' }));
 
   app.use('/api', healthRouter(db));
