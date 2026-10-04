@@ -7,10 +7,11 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B14 Web scaffold + campaign list (B11 still awaits the owner's CI confirmation for a5e556a)
-- Doing now: reviewing the existing apps/web scaffold against §3/§4 (Next.js 14 App Router, Tailwind, Recharts).
-- Next step: typed API client from packages/shared (zod-parsed responses), campaign list page `/`, create form.
-- Files in flight: apps/web/src/**
+- Task: B15 Dashboard (B11 still awaits the owner's CI confirmation for a5e556a)
+- Doing now: `/campaigns/[id]` client page: KPI tiles from /stats/summary, four Recharts charts (§9) from
+  /stats/daily of the campaign and its baseline, "Advance 1 day" / "Advance to end" controls, loading/error/empty.
+- Next step: chart data shaping in a pure, unit-tested module (`src/lib/charts.ts`), then the page, then build.
+- Files in flight: apps/web/src/app/campaigns/[id]/page.tsx, apps/web/src/lib/charts.ts, apps/web/src/components/*
 - Open problems / gotchas:
   - API tests run in a single fork (vitest `api` project) because they share the test database.
   - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
@@ -18,11 +19,15 @@ continue from this file alone.
   - Days are 1-based in core; the live path maps day d to `start_date + d - 1` (IST dates).
   - Local `tsc --build` can trust a stale tsbuildinfo; before marking a task done run `sh scripts/ci-local.sh`
     (fresh clone, Node 20, frozen install), which matches CI exactly (ADR-019).
+  - Port 4100 is taken by another local project on this machine: run the API with `PORT=4101` and the web app
+    with `NEXT_PUBLIC_API_URL=http://localhost:4101` for manual checks. The browser extension was not connected,
+    so B14 was smoke-tested over HTTP (page render, CORS preflight, create, list), not visually.
   - `.env` exists and must never be printed or overwritten. Never name any tool or assistant in code, comments or docs.
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Log
 
+- 2026-10-05 · B14 done (4def352): web scaffold, typed zod client, list + create form; web joins typecheck/lint/test and CI builds it (ADR-021). ci-local green.
 - 2026-10-05 · B13 done (9964f8b): live allocations equal runCampaign for 5 days (thompson and greedy, drift, uneven jobs). ci-local green.
 - 2026-10-05 · B12 done (0df99f6): stats daily/summary with window SQL, experiments/latest, hand-computed fixture; ADR-020. ci-local green.
 - 2026-10-05 · B11 reopened: CI Typecheck red (TS2769). Fixed in a5e556a (@types/express 4, single @types/node 20, ADR-019); scripts/ci-local.sh reproduces CI. Awaiting owner confirmation.
