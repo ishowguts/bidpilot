@@ -60,3 +60,6 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Build web
+        run: pnpm --filter @bidpilot/web build

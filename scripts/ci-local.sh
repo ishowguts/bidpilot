@@ -1,6 +1,6 @@
 #!/bin/sh
 # Reproduces .github/workflows/ci.yml locally: a fresh clone of a committed ref, Node 20, a frozen install,
-# fresh databases, then the same Migrate and Seed, Guard, Lint, Typecheck and Test steps. A green run here means
+# fresh databases, then the same Migrate and Seed, Guard, Lint, Typecheck, Test and Build web steps. A green run here means
 # a green CI run; the working tree's node_modules and build caches are never used.
 #
 # Usage: sh scripts/ci-local.sh [ref]   (default: HEAD; needs `docker compose up -d`)
@@ -40,4 +40,5 @@ node scripts/guard.mjs all
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm --filter @bidpilot/web build
 echo "ci-local: green on $SHA"

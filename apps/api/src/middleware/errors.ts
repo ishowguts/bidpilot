@@ -1,8 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { z } from 'zod';
+import type { ApiErrorBody } from '@bidpilot/shared';
 
 /** Error codes and statuses from ARCHITECTURE §8. */
-export type ErrorCode = 'VALIDATION_ERROR' | 'NOT_FOUND' | 'CONFLICT' | 'PAYLOAD_TOO_LARGE' | 'INTERNAL';
+export type ErrorCode = ApiErrorBody['error']['code'];
 
 const STATUS: Record<ErrorCode, number> = {
   VALIDATION_ERROR: 400,

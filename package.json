@@ -8,7 +8,7 @@
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "typecheck": "tsc --build",
+    "typecheck": "tsc --build && pnpm --filter @bidpilot/web typecheck",
     "test": "vitest run",
     "build": "tsc --build",
     "exp": "pnpm --filter experiments run start",

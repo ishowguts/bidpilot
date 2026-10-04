@@ -181,3 +181,14 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   `baseline` and `deltaCpaPct` = (cpa / baseline cpa − 1) × 100 are present only on a campaign with a paired
   baseline; `deltaCpaPct` is null when either side has no applies.
 - `/experiments/latest` validates the file with the shared schema: 404 when it does not exist, 500 when malformed.
+
+## ADR-021 · 2026-10-05 · Web app structure
+- Pages are client components that call the API from the browser (`NEXT_PUBLIC_API_URL`, allowed by
+  `CORS_ORIGINS`). The site builds to static pages, needs no server-side API access at build time, and the API stays
+  the only thing that touches Postgres.
+- `apps/web/src/lib/api.ts` is the typed client: every response is parsed with the `packages/shared` schema and
+  errors are read with `apiErrorSchema` (now shared; the API derives its `ErrorCode` from it). `zod` is a direct
+  dependency of the web app for that reason.
+- The web app joins the root checks: `pnpm typecheck` also runs its `tsc --noEmit`, `pnpm lint` covers its sources,
+  its unit tests run in the `pure` Vitest project, and CI gains a "Build web" step (`next build`), mirrored in
+  `scripts/ci-local.sh`.
