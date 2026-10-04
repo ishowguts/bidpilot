@@ -22,7 +22,8 @@ export interface ThompsonOptions {
   capacityHeadroom?: number;
 }
 
-const DEFAULTS: Required<ThompsonOptions> = { gamma: DEFAULT_GAMMA, draws: 2000, floor: 0.03, capacityHeadroom: 1.2 };
+// Floor 1%: measured better than 3% in every scenario (ADR-014).
+const DEFAULTS: Required<ThompsonOptions> = { gamma: DEFAULT_GAMMA, draws: 2000, floor: 0.01, capacityHeadroom: 1.2 };
 
 /** Used as ĉ for every arm before the category has any clicks; only CPC ratios matter, so any constant works. */
 const NO_DATA_CPC = 1;

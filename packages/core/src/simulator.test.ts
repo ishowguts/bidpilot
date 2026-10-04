@@ -3,6 +3,8 @@ import { armDay, hourTraffic } from './simulator.js';
 import {
   CATEGORIES,
   DRIFT_DAY,
+  EMERGENCE_DAY,
+  EMERGING_PUBLISHER,
   HOURLY_WEIGHTS,
   PUBLISHER_IDS,
   armTruth,
@@ -66,6 +68,25 @@ describe('scenarios', () => {
       expect(after.applyRate).toBeCloseTo(before.applyRate / 2, 12);
       const other = PUBLISHER_IDS.find((p) => p !== best)!;
       expect(armTruth('drift', 30, category, other)).toEqual(armTruth('stationary', 30, category, other));
+    }
+  });
+});
+
+describe('emergence scenario', () => {
+  it('publisher A starts poor and becomes the best arm from day 10', () => {
+    for (const category of CATEGORIES) {
+      const cpaOn = (day: number, pub: PublisherId): number => trueCpa(armTruth('emergence', day, category, pub));
+      const before = PUBLISHER_IDS.map((pub) => cpaOn(EMERGENCE_DAY - 1, pub));
+      const after = PUBLISHER_IDS.map((pub) => cpaOn(EMERGENCE_DAY, pub));
+      // Before: among the worst half of arms.
+      expect([...before].sort((a, b) => a - b).indexOf(before[EMERGING_PUBLISHER - 1]!)).toBeGreaterThanOrEqual(3);
+      // After: strictly the best, with more capacity than the default category budget.
+      expect(Math.min(...after)).toBe(after[EMERGING_PUBLISHER - 1]);
+      expect(after.filter((cpa) => cpa === after[EMERGING_PUBLISHER - 1]).length).toBe(1);
+      const a = armTruth('emergence', EMERGENCE_DAY, category, EMERGING_PUBLISHER);
+      expect(a.capacity * a.cpc).toBeGreaterThan(5000);
+      // Other arms are unchanged.
+      expect(armTruth('emergence', 20, category, 3)).toEqual(armTruth('stationary', 20, category, 3));
     }
   });
 });

@@ -17,7 +17,7 @@ export const PUBLISHER_SLUGS: Record<PublisherId, string> = {
   6: 'pub-f',
 };
 
-export const SCENARIOS = ['stationary', 'drift'] as const;
+export const SCENARIOS = ['stationary', 'drift', 'emergence'] as const;
 export type ScenarioName = (typeof SCENARIOS)[number];
 
 export interface ArmTruth {
@@ -73,6 +73,15 @@ const BASE_TRUTH: Record<Category, CategoryTruth> = {
 export const DRIFT_DAY = 15;
 const DRIFT_FACTOR = 0.5;
 
+/**
+ * Emergence scenario: publisher A starts as a poor arm (CPA ₹600-667) and from day 10 its apply rate triples, which
+ * makes it the best arm in every category (CPA ₹200-222) with more capacity than the category budget. A policy
+ * only finds this out if it keeps exploring.
+ */
+export const EMERGENCE_DAY = 10;
+export const EMERGING_PUBLISHER: PublisherId = 1;
+const EMERGENCE_FACTOR = 3;
+
 /** Daily noise (§5.1): CPC × lognormal(0, 0.15), apply rate × lognormal(0, 0.10). */
 export const CPC_NOISE_SIGMA = 0.15;
 export const APPLY_RATE_NOISE_SIGMA = 0.1;
@@ -93,12 +102,16 @@ export function bestPublisher(category: Category): PublisherId {
 
 /**
  * Ground truth for one arm on a 1-based day, before daily noise. In the drift scenario the best arm of every
- * category loses half its apply rate from `DRIFT_DAY` on.
+ * category loses half its apply rate from `DRIFT_DAY` on. In the emergence scenario publisher A triples its apply
+ * rate from `EMERGENCE_DAY` on.
  */
 export function armTruth(scenario: ScenarioName, day: number, category: Category, publisher: PublisherId): ArmTruth {
   const base = BASE_TRUTH[category][publisher];
   if (scenario === 'drift' && day >= DRIFT_DAY && publisher === bestPublisher(category)) {
     return { ...base, applyRate: base.applyRate * DRIFT_FACTOR };
+  }
+  if (scenario === 'emergence' && day >= EMERGENCE_DAY && publisher === EMERGING_PUBLISHER) {
+    return { ...base, applyRate: base.applyRate * EMERGENCE_FACTOR };
   }
   return base;
 }

@@ -88,3 +88,20 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
 - Evidence: bought/available clicks at 1.2 × capacity value rose from 0.883 to 0.929 (20 seeds × 10 days); the
   capped-arm feedback loop rose from 0.78-0.88 to 0.85-0.97 of capacity. Both are regression tests in
   `pacing.test.ts` that fail on the old code. The §10 properties hold over 30,000 fast-check cases.
+
+## ADR-013 · 2026-10-04 · Third scenario: emergence
+- Owner decision: keep `stationary` and `drift` unchanged and add `emergence`, the case exploration exists for.
+- Definition: from day 10, publisher A's apply rate triples in every category. A moves from a poor arm (CPA ₹600-667,
+  in the worst half) to the best arm (CPA ₹200-222) with more capacity than the category budget. Nothing else
+  changes. Constants `EMERGENCE_DAY = 10` and `EMERGING_PUBLISHER = 1` live in `scenarios.ts`.
+- Consequence: the `campaigns.scenario` check constraint needs a migration adding `'emergence'` (done in B11, since
+  committed migrations are never edited). Experiments report all three scenarios.
+
+## ADR-014 · 2026-10-04 · Exploration floor 1% (supersedes the 3% in ADR-004)
+- Owner rule: keep 3% unless the measurements clearly favour another value in every scenario.
+- Measurement (20 seeds × 30 days, ₹20,000/day, paired by seed, 95% CI with t(19)): Thompson CPA with floor 1%
+  versus 3%: stationary −1.50% ± 0.60 (lower on 17/20 seeds), drift −1.48% ± 0.75 (16/20), emergence −3.43% ± 1.03
+  (18/20). Every interval excludes zero, so 1% is clearly better in every scenario. Floor 0% versus 1% is not
+  clearly different in stationary (−0.28% ± 1.01) or drift (+0.22% ± 0.90), so the floor stays above zero to keep
+  the guarantee that every publisher keeps producing evidence.
+- Consequence: default `f = 0.01` in `policies/thompson.ts` and §6.2. The experiments report a 0/1/3% ablation.
