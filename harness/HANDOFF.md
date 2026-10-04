@@ -7,25 +7,33 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B10 Experiments CLI (rebuild)
-- Doing now: `experiments/run.ts` CLI: `pnpm exp --seeds 20 --days 30 --scenario stationary|drift|emergence|all
-  [--ablation]`. Writes `experiments/results/results.json` and `results.md` with command, commit, per (scenario,
-  policy) total applies, CPA mean ± 95% CI (t, n-1 df), paired % CPA change vs equal with CI, regret vs oracle,
-  mean pacing ratio, overdelivery count. `--ablation` adds Thompson floor 0/1/3% rows. Default run must stay
-  under 60 s; record both runtimes in STATE Measurements.
-- Next step: run the full experiment, copy numbers into STATE Measurements, mark B10 done, push. Then B11.
-- Files in flight: experiments/src/run.ts (plus a stats helper), experiments/results/*
+- Task: B11 Campaign API (rebuild)
+- Doing now: reading the db package (schema, migrations, seed) and planning B11.
+- Plan:
+  1. Fix the B03 review items first: `GET /api/publishers` reads the DB, pino-http wired, API tests use
+     `DATABASE_URL_TEST`.
+  2. Migration 0002: allow scenario 'emergence' in the campaigns check (ADR-013).
+  3. Shared zod schemas for campaigns in `packages/shared` (create body, advance body, responses).
+  4. Core: pure event expansion (hourly arm results to per-click/apply events with deterministic idempotency
+     keys, §7) so the API only does I/O.
+  5. Services: create campaign (+ jobs, + paired equal baseline with the same seed), list, get, advance N days:
+     one transaction per day: allocate (policy built from SQL observations) → simulate → ingest events →
+     refresh view → bump current_day. 409 when finished.
+  6. Tests: create + advance 3 days; advance past end → 409; validation failures; re-running a crashed day does
+     not double count.
+- Next step: step 1.
+- Files in flight: apps/api, packages/db, packages/shared, packages/core
 - Open problems / gotchas:
+  - `@bidpilot/core` resolves to `dist/` (package.json main). After editing core, run `pnpm typecheck` (tsc
+    --build) before running the API or its tests, or they use stale code. The experiments `start` script builds
+    first for this reason.
   - Days are 1-based in core. Policy interface has a `day` argument (ADR-011). Floor default 1% (ADR-014).
-  - Scenario `emergence` needs a migration for the campaigns check constraint in B11 (ADR-013).
-  - Full measurement with ablation took 62 s in a throwaway script; the default run excludes the ablation.
-  - B03 review: `GET /api/publishers` is a stub returning `[]`, pino-http is not wired, and the API test hardcodes
-    the test DB URL instead of `DATABASE_URL_TEST`. Fix in B11.
   - `.env` exists and must never be printed or overwritten. Never name any tool or assistant in code, comments or docs.
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Log
 
+- 2026-10-04 · B10 done (5293224): experiments CLI, 3 scenarios, `--ablation`; default 27.9 s, ablation 60.5 s. Next: B11.
 - 2026-10-04 · B08 done (13eace5) and B09 done (99825a7): criteria restated per ADR-015 (owner approved), all tests pass. CI green on c6ea8c1 (owner checked). Next: B10.
 - 2026-10-04 · B08: pacing defect fixed (cf34cee), emergence scenario + 1% floor (08cae89). Waiting for owner review.
 - 2026-10-04 · B07 done (bc1b3aa): pacing with same-hour recovery, equal policy, runCampaign, fast-check properties. Next: B08.

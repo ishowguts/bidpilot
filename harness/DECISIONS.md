@@ -119,3 +119,10 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   measured 20/20 in all three). Against greedy, Thompson wins clearly only in `emergence` (20/20, bar 18/20). In
   stationary and drift greedy has about 2% lower mean CPA and equal regret within the confidence interval; the
   README reports this rather than claiming superiority.
+
+## ADR-016 · 2026-10-04 · Floor ablation behind `--ablation`; committed results include it
+- Owner decision: the default `pnpm exp` run must stay under the 60 s target, so the 0% and 3% floor variants run
+  only with `--ablation`. Measured: default run 27.9 s, with `--ablation` 60.5 s (STATE Measurements).
+- The committed `experiments/results/` files come from the `--ablation` run so the README and the experiments page
+  can show the ablation; the files record the exact command and commit.
+- Arguments are parsed with `node:util` `parseArgs` and validated with zod, so no CLI framework is needed.
