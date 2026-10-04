@@ -7,35 +7,25 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B11 Campaign API (rebuild)
-- Doing now: step 3 (shared campaign schemas). Step 2 done: migration 0002 (ADR-017). Step 1 done: publishers from DB, pino-http, routes/middleware split, async
-  error wrapper, tests on `DATABASE_URL_TEST`, seed pins publisher ids 1-6, vitest projects (API files serial).
-- Plan:
-  1. Fix the B03 review items first: `GET /api/publishers` reads the DB, pino-http wired, API tests use
-     `DATABASE_URL_TEST`.
-  2. Migration 0002 (B02 review): §7 CHECK constraints (none exist), 'emergence' in the scenario check (ADR-013),
-     seed smallint -> integer, events.job_id bigserial -> bigint, composite primary keys for allocations and
-     daily_summaries instead of unique indexes. Generate with drizzle-kit so the snapshot stays in sync.
-  3. Shared zod schemas for campaigns in `packages/shared` (create body, advance body, responses).
-  4. Core: pure event expansion (hourly arm results to per-click/apply events with deterministic idempotency
-     keys, §7) so the API only does I/O.
-  5. Services: create campaign (+ jobs, + paired equal baseline with the same seed), list, get, advance N days:
-     one transaction per day: allocate (policy built from SQL observations) → simulate → ingest events →
-     refresh view → bump current_day. 409 when finished.
-  6. Tests: create + advance 3 days; advance past end → 409; validation failures; re-running a crashed day does
-     not double count.
-- Next step: step 3.
-- Files in flight: apps/api, packages/db, packages/shared, packages/core
+- Task: B12 Stats API
+- Doing now: planning. `services/stats.ts` with the §7 window-function query for `/campaigns/:id/stats/daily`
+  (per day and publisher: clicks, applies, spend, cpa, cpa7d, spendShare, budget, pBest), `/stats/summary`
+  (spend, budget, applies, cpa, pacingRatio, overdelivery, baseline { applies, cpa }, deltaCpaPct), and
+  `/experiments/latest` (reads experiments/results/results.json, zod-validated).
+- Next step: shared response schemas, then the service and routes, then a hand-computed fixture test
+  (insert known events and allocations directly, compare every field).
+- Files in flight: apps/api/src/services/stats.ts, routes/stats.ts, packages/shared/src/stats.ts
 - Open problems / gotchas:
-  - `@bidpilot/core` resolves to `dist/` (package.json main). After editing core, run `pnpm typecheck` (tsc
-    --build) before running the API or its tests, or they use stale code. The experiments `start` script builds
-    first for this reason.
-  - Days are 1-based in core. Policy interface has a `day` argument (ADR-011). Floor default 1% (ADR-014).
+  - API tests run in a single fork (vitest `api` project) because they share the test database.
+  - `@bidpilot/core` and `@bidpilot/shared` resolve to `dist/`: run `pnpm typecheck` (tsc --build) after editing
+    them, before running API tests.
+  - Days are 1-based in core; the live path maps day d to `start_date + d - 1` (IST dates).
   - `.env` exists and must never be printed or overwritten. Never name any tool or assistant in code, comments or docs.
 - Commands to verify: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Log
 
+- 2026-10-04 · B11 done (6be34ac): campaign API with paired baseline, per-day transactions, crash-safe re-run; B02/B03 review fixes (migration 0002, publishers, pino-http, test DB). Next: B12.
 - 2026-10-04 · B10 done (5293224): experiments CLI, 3 scenarios, `--ablation`; default 27.9 s, ablation 60.5 s. Next: B11.
 - 2026-10-04 · B08 done (13eace5) and B09 done (99825a7): criteria restated per ADR-015 (owner approved), all tests pass. CI green on c6ea8c1 (owner checked). Next: B10.
 - 2026-10-04 · B08: pacing defect fixed (cf34cee), emergence scenario + 1% floor (08cae89). Waiting for owner review.
