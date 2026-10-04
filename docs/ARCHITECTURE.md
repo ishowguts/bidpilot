@@ -388,6 +388,15 @@ Ports differ from TalentLens (5433 / 4100 / 3100) so both projects can run at th
 Neon (Postgres), Render (api), Vercel (web), same pattern as TalentLens. Seed a demo campaign + paired baseline
 advanced to day 30 on deploy so the dashboard is never empty.
 
+- **API (Render, `render.yaml`):** build `pnpm install --frozen-lockfile && pnpm build`; start runs
+  `pnpm --filter db migrate`, `pnpm --filter db seed`, `node apps/api/dist/seedDemo.js`, then the server. All three
+  setup steps are idempotent, so every deploy and restart is safe. Env: `DATABASE_URL` (Neon pooled URL),
+  `CORS_ORIGINS` (the Vercel URL), `LOG_LEVEL`. Health check: `/api/health`.
+- **Demo seed (`apps/api/src/seedDemo.ts`):** "Demo: emerging publisher", Thompson, `emergence`, seed 1, ₹20,000/day,
+  30 days from 2026-10-01, with its equal-split baseline; found by name and advanced only by the days left.
+- **Web (Vercel, `apps/web/vercel.json`):** root directory `apps/web`; build `pnpm --filter @bidpilot/shared build &&
+  pnpm --filter @bidpilot/web build`; env `NEXT_PUBLIC_API_URL` = the Render URL.
+
 ## 14. How real traffic would differ (keep honest in the README)
 
 Real click data is delayed (applies arrive hours or days after clicks), noisy, seasonal, sometimes fraudulent, and

@@ -1,0 +1,21 @@
+# Render blueprint for the API (ARCHITECTURE §13). Postgres is Neon: set DATABASE_URL to its pooled connection
+# string. The start command migrates, seeds publishers and the demo campaign (all idempotent), then serves.
+services:
+  - type: web
+    name: bidpilot-api
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    startCommand: >-
+      pnpm --filter db migrate && pnpm --filter db seed && node apps/api/dist/seedDemo.js &&
+      node apps/api/dist/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '20'
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: LOG_LEVEL
+        value: info

@@ -192,3 +192,10 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
 - The web app joins the root checks: `pnpm typecheck` also runs its `tsc --noEmit`, `pnpm lint` covers its sources,
   its unit tests run in the `pure` Vitest project, and CI gains a "Build web" step (`next build`), mirrored in
   `scripts/ci-local.sh`.
+
+## ADR-022 · 2026-10-05 · Deploy setup
+- Migrations, the publisher seed and the demo seed run in the API's start command rather than a separate release
+  step, because the free Render plan has no pre-deploy hook. Each is idempotent, so restarts repeat them harmlessly.
+- The demo is the `emergence` scenario because it is the case exploration exists for (ADR-013): its budget-share
+  chart shows Thompson sampling moving money to the publisher that improves on day 10. It has a fixed seed and start
+  date, so the deployed numbers are reproducible from the repo.
