@@ -7,8 +7,8 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B05 RNG + samplers (rebuild)
-- Doing now: committing B05. Done: `packages/core/src/rng.ts` rewritten on pure-rand xoroshiro128+ with streams derived by splitmix64
+- Task: B06 Scenarios + simulator (rebuild)
+- Doing now: starting B06. B05 is done: `packages/core/src/rng.ts` rewritten on pure-rand xoroshiro128+ with streams derived by splitmix64
   hashing of the full tuple; environment stream key (seed, day, hour, category, publisher), policy stream key
   (seed, policy, day). Samplers: uniform, normal, lognormal, gamma (Marsaglia-Tsang), beta, poisson, binomial.
 - Next step: B06. Review `scenarios.ts` (kept from before; it does not use the RNG), write `simulator.ts`
@@ -26,6 +26,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-04 · B05 done (38d4057): pure-rand streams with hashed keys, exact samplers, moment tests. Next: B06.
 - 2026-10-04 · recovered B11: uncommitted campaign routes lacked advance, baseline, shared schemas and tests; discarded. Removed duplicate apps/experiments. STATE B05-B11 reset to todo.
 - 2026-10-04 · Taking over after owner audit. Rebuilding B05-B11 strictly to ARCHITECTURE; ADRs for deviations.
 - 2026-10-02 · B10 marked done by previous agent (rejected in audit: duplicate experiments package, no results files).
