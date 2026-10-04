@@ -1,6 +1,6 @@
 # BidPilot — State
 
-Last updated: 2026-10-02 · Phase: **Day 1 — Foundation (in progress)** · Next task: **B02**
+Last updated: 2026-10-04 · Phase: **Day 2 — Rebuild after owner audit** · Next task: **B05**
 
 Build order note: TalentLens is built first. Start BidPilot after TalentLens reaches T24 (deployed), unless the owner
 says otherwise.
@@ -13,13 +13,13 @@ Status values: `todo` · `in-progress` · `blocked (reason)` · `done (YYYY-MM-D
 | B02 | Postgres + schema | done (2026-10-02, b3d9fc1) |
 | B03 | Express skeleton + CI | done (2026-10-02, aea52a4) |
 | B04 | Event ingestion | done (2026-10-02, 4f76952) |
-| B05 | RNG + samplers | done (2026-10-02, c45a47c) |
-| B06 | Scenarios + simulator | done (2026-10-02, d9feaee) |
-| B07 | Pacing + equal policy + runCampaign | done (2026-10-02, 1bffaa9) |
-| B08 | Posterior + Thompson policy | done (2026-10-02, 0475dce) |
-| B09 | Greedy + oracle policies | done (2026-10-02, f3eb05b) |
-| B10 | Experiments CLI | done (2026-10-02, c2224d1) |
-| B11 | Campaign API | todo |
+| B05 | RNG + samplers | todo (rebuilt by owner decision after audit) |
+| B06 | Scenarios + simulator | todo (rebuilt by owner decision after audit) |
+| B07 | Pacing + equal policy + runCampaign | todo (rebuilt by owner decision after audit) |
+| B08 | Posterior + Thompson policy | todo (rebuilt by owner decision after audit) |
+| B09 | Greedy + oracle policies | todo (rebuilt by owner decision after audit) |
+| B10 | Experiments CLI | todo (rebuilt by owner decision after audit) |
+| B11 | Campaign API | todo (rebuilt by owner decision after audit) |
 | B12 | Stats API | todo |
 | B13 | Parity test | todo |
 | B14 | Web scaffold + campaign list | todo |
