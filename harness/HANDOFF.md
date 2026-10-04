@@ -7,16 +7,17 @@ continue from this file alone.
 ## Active session
 
 - Status: IN PROGRESS
-- Task: B07 Pacing + equal policy + runCampaign (rebuild)
-- Doing now: adding fast-check as a dev dependency; writing `policies/types.ts` (Policy interface,
-  Observation, Allocation), `policies/equal.ts`, `pacing.ts` (§6.4) and `runCampaign.ts` (day loop).
-- Next step: fast-check pacing properties (spend <= budget always; spend >= 0.97 × budget when capacity × CPC
-  >= 1.2 × budget) and an equal-policy 30-day determinism test; then B08.
-- Files in flight: packages/core/src/pacing.ts, policies/types.ts, policies/equal.ts, runCampaign.ts and tests
+- Task: B08 Posterior + Thompson policy (rebuild)
+- Doing now: `posterior.ts` as an incremental fold (state per arm; each elapsed day applies γ exactly once, in
+  day order, then adds that day's counts) and `policies/thompson.ts` (§6.2: 2,000 draws, pBest, 3% floor,
+  capacity cap with redistribution by pBest).
+- Next step: tests: discount update unit tests (γ once per day, skipped days, γ = 1 equals plain counts, fold
+  of full history equals incremental updates), convergence (true best arm pBest > 0.8 by day 15 for >= 18/20
+  seeds), drift (budget off the degraded arm within 5 days of day 15 with γ = 0.95). Then B09.
+- Files in flight: packages/core/src/posterior.ts, policies/thompson.ts and tests
 - Open problems / gotchas:
-  - Days are 1-based everywhere in core (drift starts on day 15 = `DRIFT_DAY`).
-  - Simulator API: `armDay(seed, scenario, day, category, publisher)` gives the noisy daily parameters;
-    `hourTraffic(...)` gives available clicks and an `applies(clicks)` draw (order fixed for common random numbers).
+  - Days are 1-based in core (drift from day 15 = `DRIFT_DAY`). Policy interface has a `day` argument (ADR-011).
+  - Pacing recovery spends in the same hour (ADR-010). Observations carry spend rounded to paise.
   - CI status cannot be checked from this machine (no `gh` CLI, private repo). Owner should glance at Actions.
   - B03 review: `GET /api/publishers` is a stub returning `[]`, pino-http is not wired, and the API test hardcodes
     the test DB URL instead of `DATABASE_URL_TEST`. Fix in B11.
@@ -25,6 +26,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-04 · B07 done (bc1b3aa): pacing with same-hour recovery, equal policy, runCampaign, fast-check properties. Next: B08.
 - 2026-10-04 · B06 done (f5a682e): scenarios, hour-level simulator, CPA convergence and drift tests. Next: B07.
 - 2026-10-04 · B05 done (38d4057): pure-rand streams with hashed keys, exact samplers, moment tests. Next: B06.
 - 2026-10-04 · recovered B11: uncommitted campaign routes lacked advance, baseline, shared schemas and tests; discarded. Removed duplicate apps/experiments. STATE B05-B11 reset to todo.
