@@ -244,3 +244,4 @@ Append-only. Format: number, date, decision, why, consequences. To reverse one, 
   template is a correct answer. Only grounded model text is cached.
 - The prompt explains each field in plain words and forbids field names, JSON and null in the text. The first prompt
   produced grounded but awkward text ("a shareChangePts of 8.9"); measured after the change, below.
+- Build scripts of `@google/genai` and `protobufjs` are denied in `pnpm-workspace.yaml` (`allowBuilds: false`): pnpm 12 refuses a frozen install with unreviewed scripts, and the client works without them (live calls above ran on an install that skipped them).

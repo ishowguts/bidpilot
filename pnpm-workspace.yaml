@@ -4,5 +4,8 @@ packages:
   - 'experiments'
 allowBuilds:
   esbuild: true
+  # Not needed at runtime: the summary client works without their install scripts (ADR-025).
+  '@google/genai': false
+  protobufjs: false
 overrides:
   '@types/node': ^20.0.0
