@@ -60,5 +60,4 @@ fix (ADR-023); every CPA moved within its confidence interval.
 ## Owner-only items
 
 - Gemini API key for the stretch summary (agents never commit keys).
-- Recording a dashboard GIF (optional; the README has a static screenshot of the live dashboard).
 - Setting GEMINI_API_KEY and GEMINI_MODEL in Render to enable model-written summaries on the live API.

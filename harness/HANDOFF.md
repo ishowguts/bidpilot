@@ -9,7 +9,7 @@ continue from this file alone.
 - Status: IDLE (all tasks B01-B20 done)
 - Task: none
 - Doing now: nothing.
-- Next step: owner items in STATE (Gemini vars in Render, optional GIF). Any new work starts as a new task in
+- Next step: owner item in STATE (Gemini vars in Render). Any new work starts as a new task in
   TASKS.md.
 - Files in flight: none
   packages/db/src/client.ts, scripts/seed-prod.sh
@@ -29,6 +29,7 @@ continue from this file alone.
 
 ## Log
 
+- 2026-10-05 · README: owner's docs/demo.gif added above the screenshot. Production: deleted the owner's test campaign "Hiring push" and its baseline (day 0, 20 jobs each, no events); now 2 campaigns, 40 jobs, 1,440 allocations, 96,940 events, 92,942 clicks in events and daily_stats.
 - 2026-10-05 · B20 done (cb7f564): README with live links, screenshot, diagram, results copied from results.md, how to run, §14. ci-local green.
 - 2026-10-05 · B19 done (5059301, 023b1da): summary endpoint, grounding check, template fallback, fake-model tests; live model 4/4 grounded. Owner: set GEMINI_API_KEY and GEMINI_MODEL in Render to enable it there.
 - 2026-10-05 · B18 done: web https://bidpilot-ashen.vercel.app and API https://bidpilot-api-jcys.onrender.com live; demo dashboard (tiles, four charts), experiments page and campaign list verified on the live site. Demo summary: 2,429 applies, CPA ₹247, −35.4% vs equal split, pacing 99.9%, overdelivery ₹0.
