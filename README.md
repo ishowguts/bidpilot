@@ -1,5 +1,7 @@
 # BidPilot
 
+![Demo: the campaign list, the demo campaign's dashboard with its four charts, and the experiments page](docs/demo.gif)
+
 Job-ad budget optimizer. A campaign has a daily budget and jobs in four categories; six job sites ("publishers")
 sell clicks at different prices and turn clicks into applications at different, unknown rates. Each day BidPilot
 decides how much to spend on each publisher, using Thompson sampling, paces the spend hour by hour so the day never
