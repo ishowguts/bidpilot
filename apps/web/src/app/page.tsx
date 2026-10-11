@@ -14,14 +14,15 @@ export default function CampaignsPage() {
   const visible = campaigns.data?.filter((c) => c.baselineOf === null);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-      <section className="lg:col-span-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Plan your job-ad budget</h1>
-        <p className="mt-1 text-sm text-slate-600">
+    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <section className="pb-3 xl:col-span-2">
+        <p className="section-label">Budget allocation / Campaigns</p>
+        <h1 className="workspace-heading">Make every application count.</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600">
           Compare spending strategies across six simulated publishers. No real ads or payments are involved.
         </p>
       </section>
-      <Card title="Campaigns">
+      <Card title="Your campaigns">
         {campaigns.error ? (
           <ErrorBox error={campaigns.error} onRetry={campaigns.reload} />
         ) : !visible ? (
@@ -32,7 +33,7 @@ export default function CampaignsPage() {
           <CampaignTable campaigns={visible} />
         )}
       </Card>
-      <Card title="New campaign">
+      <Card title="Set up a simulation">
         <CreateForm />
       </Card>
     </div>
@@ -42,7 +43,8 @@ export default function CampaignsPage() {
 function CampaignTable({ campaigns }: { campaigns: Campaign[] }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm">
+      <table className="campaign-table">
+        <caption className="sr-only">Campaign strategies, daily budgets, and simulated days</caption>
         <thead className="text-xs uppercase text-slate-500">
           <tr>
             <th className="py-2 pr-3">Name</th>
@@ -56,7 +58,7 @@ function CampaignTable({ campaigns }: { campaigns: Campaign[] }) {
           {campaigns.map((c) => (
             <tr key={c.id}>
               <td className="py-2 pr-3">
-                <Link href={`/campaigns/${c.id}`} className="font-medium text-indigo-700 hover:underline">
+                <Link href={`/campaigns/${c.id}`} className="font-medium text-teal-800 hover:underline">
                   {c.name}
                 </Link>
               </td>
@@ -74,7 +76,7 @@ function CampaignTable({ campaigns }: { campaigns: Campaign[] }) {
   );
 }
 
-const field = 'mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm';
+const field = 'campaign-field';
 
 function CreateForm() {
   const router = useRouter();
@@ -110,10 +112,10 @@ function CreateForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 text-sm">
+    <form onSubmit={onSubmit} className="space-y-5 text-sm">
       <label className="block">
         Name
-        <input name="name" required maxLength={120} defaultValue="Hiring push" className={field} />
+        <input name="name" required maxLength={120} placeholder="e.g. Engineering hiring" className={field} />
       </label>
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
@@ -153,16 +155,15 @@ function CreateForm() {
         Seed (optional)
         <input name="seed" type="number" min={0} step={1} placeholder="random" className={field} />
       </label>
+      <p className="text-xs leading-relaxed text-slate-500">
+        Reuse a seed to compare strategies against the same simulated traffic. Leave it blank for a new run.
+      </p>
       <label className="flex items-center gap-2">
         <input name="compareBaseline" type="checkbox" defaultChecked />
         Compare with an equal budget split
       </label>
       {error && <ErrorBox error={error} />}
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-full rounded-md bg-indigo-600 px-3 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-      >
+      <button type="submit" disabled={submitting} className="workspace-button w-full">
         {submitting ? 'Creating…' : 'Create campaign'}
       </button>
     </form>

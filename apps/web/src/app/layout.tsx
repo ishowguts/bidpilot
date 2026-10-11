@@ -12,29 +12,32 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+      <body className="min-h-screen">
         <a href="#main-content" className="sr-only focus:not-sr-only focus:block focus:p-3">
           Skip to content
         </a>
-        <header className="border-b border-slate-200 bg-white">
-          <nav
-            aria-label="Main navigation"
-            className="mx-auto flex max-w-6xl flex-wrap items-center gap-6 px-4 py-3 text-sm"
-          >
-            <Link href="/" className="font-semibold">
+        <header className="workspace-header">
+          <nav aria-label="Main navigation" className="workspace-nav">
+            <Link href="/" className="workspace-brand">
+              <span className="budget-mark" aria-hidden="true">
+                <span className="h-3" />
+                <span className="h-6" />
+                <span className="h-4" />
+              </span>
               BidPilot
             </Link>
-            <Link href="/" className="text-slate-600 hover:text-slate-900">
-              Campaigns
-            </Link>
-            <Link href="/experiments" className="text-slate-600 hover:text-slate-900">
-              Experiments
-            </Link>
+            <Link href="/">Campaigns</Link>
+            <Link href="/experiments">Experiments</Link>
+            <span className="simulation-badge">Simulation workspace</span>
           </nav>
         </header>
-        <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6">
+        <main id="main-content" tabIndex={-1} className="workspace-main">
           {children}
         </main>
+        <footer className="workspace-footer">
+          <span>Seeded traffic. Reproducible comparisons.</span>
+          <span>All budgets and applications are simulated.</span>
+        </footer>
       </body>
     </html>
   );

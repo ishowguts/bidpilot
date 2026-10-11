@@ -16,7 +16,7 @@ import {
 import type { Point } from '@/lib/charts';
 import { inr, int, pct } from '@/lib/format';
 
-const COLORS = ['#4f46e5', '#0891b2', '#16a34a', '#ca8a04', '#dc2626', '#9333ea'];
+const COLORS = ['#0f766e', '#2563a6', '#7b863a', '#b87a22', '#b64b4b', '#78609d'];
 
 function Frame({ children }: { children: ReactElement }) {
   return (

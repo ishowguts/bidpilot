@@ -53,7 +53,7 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
           <Link href="/" className="text-xs text-slate-500 hover:underline">
             ← Campaigns
           </Link>
-          <h1 className="text-xl font-semibold">{campaign.name}</h1>
+          <h1 className="workspace-heading">{campaign.name}</h1>
           <p className="text-sm text-slate-500">
             {campaign.policy} · {campaign.scenario} · seed {campaign.seed} · {inr(campaign.dailyBudget)}/day ·
             day {campaign.currentDay} of {campaign.days}
@@ -82,7 +82,7 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
               type="button"
               disabled={advancing || remaining === 0}
               onClick={() => advance(remaining)}
-              className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="workspace-button"
             >
               {advancing ? 'Advancing…' : 'Advance to end'}
             </button>
@@ -94,13 +94,13 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <Tile label="Total applies" value={int(summary.applies)} />
-        <Tile label="CPA" value={inr(summary.cpa)} />
+        <Tile label="Cost per application" value={inr(summary.cpa)} />
         <Tile
           label="CPA vs equal split"
           value={summary.baseline ? signedPct(summary.deltaCpaPct) : 'no baseline'}
           tone={summary.deltaCpaPct == null ? undefined : summary.deltaCpaPct < 0 ? 'good' : 'bad'}
         />
-        <Tile label="Pacing ratio" value={pct(summary.pacingRatio)} />
+        <Tile label="Spend vs plan to date" value={pct(summary.pacingRatio)} />
         <Tile
           label="Overdelivery"
           value={inr(summary.overdelivery)}
@@ -136,9 +136,9 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
 function Tile({ label, value, tone }: { label: string; value: string; tone?: 'good' | 'bad' }) {
   const color = tone === 'good' ? 'text-emerald-700' : tone === 'bad' ? 'text-red-700' : 'text-slate-900';
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="text-xs text-slate-500">{label}</div>
-      <div className={`mt-1 text-lg font-semibold tabular-nums ${color}`}>{value}</div>
+    <div className="metric">
+      <div className="metric-label">{label}</div>
+      <div className={`metric-value ${color}`}>{value}</div>
     </div>
   );
 }
