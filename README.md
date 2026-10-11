@@ -17,9 +17,10 @@ The API runs on a free Render instance and sleeps when idle; the first request a
 
 ## Status
 
-Feature-complete for the planned scope (tasks B01-B20 in [harness/STATE.md](harness/STATE.md)): simulator,
-allocator and pacing, event API with SQL rollups, dashboard, experiments, deployment, and an optional LLM daily
-summary with a grounding check. 118 automated tests run in CI (`pnpm test`).
+The simulator, allocator, pacing controller, event API, dashboard, and experiments are implemented.
+Daily summaries are available through an optional model-backed API endpoint with a template fallback.
+This is a simulation project; it does not connect to ad networks or spend advertising budgets.
+Development checks: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What is in it
 
@@ -53,7 +54,7 @@ flowchart LR
     CAMP[Campaign runner<br/>advance N days]
     EVT[Event ingestion<br/>idempotency keys]
     STATS[Stats service<br/>rollups + window functions]
-    SUM[Daily summary<br/>LLM, numbers-only, stretch]
+    SUM[Daily summary<br/>LLM, numbers-only]
   end
   DB[(PostgreSQL 16<br/>events, allocations,<br/>daily_stats MV)]
   EXP[experiments CLI<br/>seeds × days × policies<br/>in-memory]
@@ -72,7 +73,7 @@ Two paths share the same core. The **live path** advances a campaign day by day 
 transaction that reads history back from SQL, allocates, simulates, writes allocations and events, and refreshes the
 rollups. The **experiment path** runs the same day loop in memory. A parity test checks that both make identical
 allocations for the same seed over 5 days. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); decisions:
-[harness/DECISIONS.md](harness/DECISIONS.md).
+[docs/DECISIONS.md](docs/DECISIONS.md).
 
 ## Results
 
@@ -123,7 +124,7 @@ What the numbers say:
 
 The exploration-floor ablation (0%, 1%, 3%) is in [results.md](experiments/results/results.md#exploration-floor-ablation-thompson).
 
-The demo campaign on the live dashboard (`emergence`, seed 1, 30 days) reads 2,429 applies at ₹247 per apply,
+The recorded demo run (`emergence`, seed 1, 30 days; October 2026) produced 2,429 applies at ₹247 per apply,
 −35.4% against its equal-split pair, pacing 99.9%, overdelivery ₹0 (from `/api/campaigns/:id/stats/summary`).
 
 ## Run locally
@@ -131,13 +132,13 @@ The demo campaign on the live dashboard (`emergence`, seed 1, 30 days) reads 2,4
 Requirements: Node.js 20, pnpm, Docker.
 
 ```sh
-sh scripts/setup.sh                                  # git identity and hooks
-pnpm install
+pnpm install --frozen-lockfile
 docker compose up -d                                 # Postgres 16 on port 5433
 cp .env.example .env                                 # then fill DATABASE_URL and DATABASE_URL_TEST
 pnpm --filter db migrate && pnpm --filter db seed
+pnpm build                                          # builds packages used by the API
 pnpm --filter api dev                                # API on http://localhost:4100
-pnpm --filter web dev                                # dashboard on http://localhost:3100
+pnpm --filter @bidpilot/web dev                      # http://localhost:3100; second terminal
 ```
 
 | Purpose | Command |

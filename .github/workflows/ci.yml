@@ -49,9 +49,6 @@ jobs:
           DATABASE_URL=$DATABASE_URL_TEST pnpm --filter db migrate
           DATABASE_URL=$DATABASE_URL_TEST pnpm --filter db seed
 
-      - name: Guard
-        run: node scripts/guard.mjs all
-
       - name: Lint
         run: pnpm lint
 

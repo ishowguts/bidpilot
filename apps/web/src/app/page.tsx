@@ -15,6 +15,12 @@ export default function CampaignsPage() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+      <section className="lg:col-span-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Plan your job-ad budget</h1>
+        <p className="mt-1 text-sm text-slate-600">
+          Compare spending strategies across six simulated publishers. No real ads or payments are involved.
+        </p>
+      </section>
       <Card title="Campaigns">
         {campaigns.error ? (
           <ErrorBox error={campaigns.error} onRetry={campaigns.reload} />
@@ -149,7 +155,7 @@ function CreateForm() {
       </label>
       <label className="flex items-center gap-2">
         <input name="compareBaseline" type="checkbox" defaultChecked />
-        Run a paired equal-split baseline
+        Compare with an equal budget split
       </label>
       {error && <ErrorBox error={error} />}
       <button

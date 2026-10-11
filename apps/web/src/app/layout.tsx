@@ -13,8 +13,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:block focus:p-3">
+          Skip to content
+        </a>
         <header className="border-b border-slate-200 bg-white">
-          <nav className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3 text-sm">
+          <nav
+            aria-label="Main navigation"
+            className="mx-auto flex max-w-6xl flex-wrap items-center gap-6 px-4 py-3 text-sm"
+          >
             <Link href="/" className="font-semibold">
               BidPilot
             </Link>
@@ -26,7 +32,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </Link>
           </nav>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+        <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6">
+          {children}
+        </main>
       </body>
     </html>
   );

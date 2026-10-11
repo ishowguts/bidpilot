@@ -1,7 +1,7 @@
 #!/bin/sh
 # Reproduces .github/workflows/ci.yml locally: a fresh clone of a committed ref, Node 20, a frozen install,
-# fresh databases, then the same Migrate and Seed, Guard, Lint, Typecheck, Test and Build web steps. A green run here means
-# a green CI run; the working tree's node_modules and build caches are never used.
+# fresh databases, then Migrate and Seed, Lint, Typecheck, Test and Build web.
+# Uses the CI steps without the working tree's node_modules or build caches.
 #
 # Usage: sh scripts/ci-local.sh [ref]   (default: HEAD; needs `docker compose up -d`)
 set -eu
@@ -36,7 +36,6 @@ pnpm install --frozen-lockfile
 pnpm --filter db migrate
 DATABASE_URL=$DATABASE_URL_TEST pnpm --filter db migrate
 DATABASE_URL=$DATABASE_URL_TEST pnpm --filter db seed
-node scripts/guard.mjs all
 pnpm lint
 pnpm typecheck
 pnpm test

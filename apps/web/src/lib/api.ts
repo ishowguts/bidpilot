@@ -40,7 +40,7 @@ export function createApi(baseUrl: string = API_URL, fetchImpl: Fetch = (...args
         cache: 'no-store',
       });
     } catch {
-      throw new ApiError(0, 'NETWORK', `cannot reach the API at ${baseUrl}`);
+      throw new ApiError(0, 'NETWORK', 'Unable to load campaign data. Please try again in a moment.');
     }
     const body: unknown = await res.json().catch(() => undefined);
     if (!res.ok) {
